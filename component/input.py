@@ -3,7 +3,7 @@ import flet as ft
 def input_textfield(
         max_length=10,
         text_filter=ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Z]*$", replacement_string=""),
-        label=None, hint_text=None, suffix=None, input_type=None, on_change=None, password=None
+        label=None, hint_text=None, suffix=None, input_type=None, on_change=None, password=None, value=None
 ):
     if input_type == "int":
         text_filter = ft.InputFilter(regex_string=r"^[0-9.]*$", replacement_string="")
@@ -16,8 +16,8 @@ def input_textfield(
         text_filter = ft.InputFilter(regex_string=r"^[a-zA-Z0-9@._\-\+]*$", replacement_string="")
     return ft.TextField(
         label=label,
-        password=password,
-        can_reveal_password=password,
+        password=password, # type: ignore
+        can_reveal_password=password, # type: ignore
         expand=True,
         hint_text=hint_text,
         on_change=on_change,

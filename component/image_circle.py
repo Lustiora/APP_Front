@@ -1,6 +1,6 @@
 import flet as ft
 
-def image_circle(event, src:str, size):
+def image_circle(event, size, src=None):
     return ft.Container(
         width=size,
         height=size,

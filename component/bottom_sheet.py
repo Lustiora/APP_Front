@@ -3,6 +3,9 @@ import flet as ft
 def bottom_sheet(content:list):
     return ft.BottomSheet(
         open=False,
+        draggable=True,
+        fullscreen=True,
+        maintain_bottom_view_insets_padding=True,
         content=ft.Container(
             padding=20,
             bgcolor=ft.Colors.WHITE,

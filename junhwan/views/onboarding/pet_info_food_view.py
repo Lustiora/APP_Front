@@ -3,7 +3,7 @@ import flet as ft
 import pg8000.dbapi as psycopg2
 # import psycopg2
 
-from junhwan.components import build_screen_body , go_next , input_box
+from components import build_screen_body , go_next , input_box
 from .full_query import Product
 
 import component as dogdog
@@ -28,13 +28,13 @@ def build_view(page: ft.Page):
 
 
     def on_food_weight_change(e):
-        page.session.store.set("food_weight", e.control.value)
+        page.session.store.set("food_weight", int(e.control.value))
     selected_food_weight = dogdog.input_textfield(
         hint_text="현재 급여 중인 사료 잔여량을 적어주세요", input_type="int", suffix="g",
         on_change=on_food_weight_change
     )
     if page.session.store.get("food_weight"):
-        selected_food_weight.value = page.session.store.get("food_weight")
+        selected_food_weight.value = page.session.store.get("food_weight") # type: ignore
 
     # 🟦 DB 연결 객체 / 에러 메시지 상태값
     conn = None
@@ -76,7 +76,7 @@ def build_view(page: ft.Page):
             return True
         except Exception as err:
             food_error_text = f"DB 서버 연결 실패: {err}"
-            page.snack_bar = ft.SnackBar(
+            page.snack_bar = ft.SnackBar( # type: ignore
                 content=ft.Text(f"DB 연결 실패: {err}"),
                 open=True,
             )
@@ -96,15 +96,15 @@ def build_view(page: ft.Page):
             return None
 
         try:
-            cursor = conn.cursor()
+            cursor = conn.cursor() # type: ignore
             cursor.execute(Product.product_list_query)
             rows = cursor.fetchall()
-            conn.commit()
+            conn.commit() # type: ignore
             cursor.close()
             food_error_text = None
             return rows
         except Exception as err:
-            conn.rollback()
+            conn.rollback() # type: ignore
             food_error_text = f"사료 목록 조회 실패: {err}"
             print(f"food_list_query error: {err}")
             return None
@@ -122,15 +122,15 @@ def build_view(page: ft.Page):
             return None
 
         try:
-            cursor = conn.cursor()
+            cursor = conn.cursor() # type: ignore
             cursor.execute(Product.product_search_query, (f"%{keyword}%",))
             rows = cursor.fetchall()
-            conn.commit()
+            conn.commit() # type: ignore
             cursor.close()
             food_error_text = None
             return rows
         except Exception as err:
-            conn.rollback()
+            conn.rollback() # type: ignore
             food_error_text = f"사료 검색 실패: {err}"
             print(f"food_search_query error: {err}")
             return None

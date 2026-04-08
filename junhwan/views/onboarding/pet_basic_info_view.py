@@ -1,11 +1,10 @@
 import flet as ft
 import datetime
-import base64 # Import base64
 
 import pg8000.dbapi as psycopg2
 # import psycopg2
 
-from junhwan.components import  build_screen_body
+from components import  build_screen_body
 from .full_query import Breed
 import component as dogdog
 
@@ -27,6 +26,14 @@ def build_view(page: ft.Page):
     breed_error_text = None
     selected_breed_id = None
 
+    # 🟨 키보드 숨김용 투명/더미 입력창 추가
+    dummy_input = ft.TextField(width=0, height=0, opacity=0, read_only=True)
+    if dummy_input not in page.overlay:
+        page.overlay.append(dummy_input)
+
+    async def hide_keyboard():
+        await dummy_input.focus()
+
     ####################################################################################################
     ### 애완동물 이름 입력
     ####################################################################################################
@@ -34,7 +41,7 @@ def build_view(page: ft.Page):
         page.session.store.set("pet_name", e.control.value)
     pet_name_field = dogdog.input_textfield(hint_text="이름을 입력해주세요.", on_change=petname_on_change)
     if page.session.store.get("pet_name"):
-        pet_name_field.value = page.session.store.get("pet_name")
+        pet_name_field.value = page.session.store.get("pet_name") # type: ignore
 
     ####################################################################################################
     ### 애완동물 이미지 등록
@@ -44,74 +51,47 @@ def build_view(page: ft.Page):
     selected_profile_image_text = "이미지를 등록해주세요."
 
     # Image retrieval on initial load
-    if page.session.store.get("image_data"): # Check for image_data instead of image_name
+    if page.session.store.get("image_path"): # Check for image_path
         selected_profile_image_text = page.session.store.get("image_name") # Keep displaying the name
         image_container.visible = True
-        image_container.src = page.session.store.get("image_data") # Use the base64 data URI
+        image_container.image = ft.DecorationImage(src=page.session.store.get("image_path"), fit=ft.BoxFit.COVER)
 
-    profile_image_picker = page.profile_image_picker
+    file_picker = ft.FilePicker()
 
     async def pick_profile_image(e):
         nonlocal selected_profile_image_text
+        await hide_keyboard()
 
-        files = await profile_image_picker.pick_files(
+        files = await file_picker.pick_files(
             allow_multiple=False,
             file_type=ft.FilePickerFileType.IMAGE,
         )
 
         if files:
+            print(files)
             file = files[0]
             if file.path is None:
                 print("Error: file.path is None. Could not get file path from selected file.")
                 selected_profile_image_text = "파일 경로를 가져올 수 없습니다."
-                page.snack_bar = ft.SnackBar(
-                    content=ft.Text("선택된 파일의 경로를 가져올 수 없습니다. 권한 문제 또는 Flet의 FilePicker 문제일 수 있습니다."),
-                    open=True,
-                )
                 rebuild_body()
                 page.update()
                 return
 
-            # 로컬 경로에서 파일 내용을 동기적으로 읽습니다.
-            try:
-                with open(file.path, "rb") as f:
-                    file_bytes = f.read()
-            except Exception as ex:
-                print(f"Error reading file synchronously: {ex}")
-                selected_profile_image_text = f"파일 읽기 오류: {ex}"
-                page.snack_bar = ft.SnackBar(
-                    content=ft.Text(f"파일 읽기 오류: {ex}"),
-                    open=True,
-                )
-                rebuild_body()
-                page.update()
-                return
-
-            # 바이트를 Base64로 인코딩합니다.
-            encoded_image = base64.b64encode(file_bytes).decode("utf-8")
-
-            # 데이터 URI를 위한 이미지 유형을 추론합니다.
-            image_extension = file.name.split('.')[-1].lower()
-            if image_extension == "jpg":
-                image_extension = "jpeg" # 데이터 URI의 일반적인 별칭
-
-            data_uri = f"data:image/{image_extension};base64,{encoded_image}"
-
-            # 세션에 데이터 URI와 이름을 저장합니다.
-            page.session.store.set("image_data", data_uri)
+            # 세션에 로컬 파일 경로와 이름을 직접 저장합니다.
+            page.session.store.set("image_path", file.path)
             page.session.store.set("image_name", file.name)
             selected_profile_image_text = file.name
 
             # 이미지 컨테이너를 업데이트합니다.
             image_container.visible = True
-            image_container.src = data_uri
+            image_container.image = ft.DecorationImage(src=file.path, fit=ft.BoxFit.COVER)
         else:
             selected_profile_image_text = "프로필 이미지를 등록하세요"
             # 아무것도 선택되지 않은 경우 세션에서 이미지를 지웁니다.
-            page.session.store.remove("image_data")
+            page.session.store.remove("image_path")
             page.session.store.remove("image_name")
             image_container.visible = False
-            image_container.src = None
+            image_container.image = None
 
         rebuild_body()
         page.update() # UI 업데이트를 확인합니다.
@@ -141,10 +121,6 @@ def build_view(page: ft.Page):
             return True
         except Exception as err:
             breed_error_text = f"DB 서버 연결 실패: {err}"
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"DB 연결 실패: {err}"),
-                open=True,
-            )
             return False
 
     def load_breed_list():
@@ -154,15 +130,15 @@ def build_view(page: ft.Page):
             return None
 
         try:
-            cursor = conn.cursor()
+            cursor = conn.cursor() # type: ignore
             cursor.execute(Breed.breed_list_query)
             rows = cursor.fetchall()
-            conn.commit()
+            conn.commit() # type: ignore
             cursor.close()
             breed_error_text = None
             return rows
         except Exception as err:
-            conn.rollback()
+            conn.rollback() # type: ignore
             breed_error_text = f"품종 목록 조회 실패: {err}"
             print(f"breed_list_query error: {err}")
             return None
@@ -174,15 +150,15 @@ def build_view(page: ft.Page):
             return None
 
         try:
-            cursor = conn.cursor()
+            cursor = conn.cursor() # type: ignore
             cursor.execute(Breed.breed_search_query, (f"%{keyword}%",))
             rows = cursor.fetchall()
-            conn.commit()
+            conn.commit() # type: ignore
             cursor.close()
             breed_error_text = None
             return rows
         except Exception as err:
-            conn.rollback()
+            conn.rollback() # type: ignore
             breed_error_text = f"품종 검색 실패: {err}"
             print(f"breed_search_query error: {err}")
             return None
@@ -233,11 +209,10 @@ def build_view(page: ft.Page):
                 ft.Container(
                     padding=ft.Padding.symmetric(vertical=20),
                     alignment=ft.Alignment(0, 0),
-                    content=ft.Text(
+                    content=dogdog.basic_text(
                         breed_error_text if breed_error_text else "DB 연결 오류가 발생했습니다.",
                         size=14,
                         color=ft.Colors.RED,
-                        text_align=ft.TextAlign.CENTER,
                     ),
                 )
             ]
@@ -246,10 +221,9 @@ def build_view(page: ft.Page):
         else:
             breed_list_column.controls = [
                 ft.Container(
-                    content=ft.Text(
+                    content=dogdog.basic_text(
                         "검색 결과가 없습니다.",
                         size=14,
-                        color=ft.Colors.GREY_600,
                     ),
                 )
             ]
@@ -273,7 +247,8 @@ def build_view(page: ft.Page):
     if breed_bottom_sheet not in page.overlay:
         page.overlay.append(breed_bottom_sheet)
 
-    def open_breed_bottom_sheet(e):
+    async def open_breed_bottom_sheet(e):
+        await hide_keyboard()
         breed_search_field.value = ""
         update_breed_list("")
         breed_bottom_sheet.open = True
@@ -285,15 +260,18 @@ def build_view(page: ft.Page):
 
     def open_date_picker(e):
         date_picker.open = True
-    def age_year_event(e):
+    async def age_year_event(e):
+        await hide_keyboard()
         page.session.store.set("pet_age_year", e.control.value)
         if page.session.store.get("selected_birth"):
             page.session.store.remove("selected_birth")
-    def age_month_event(e):
+    async def age_month_event(e):
+        await hide_keyboard()
         page.session.store.set("pet_age_month", e.control.value)
         if page.session.store.get("selected_birth"):
             page.session.store.remove("selected_birth")
-    def change_birth_mode(e):
+    async def change_birth_mode(e):
+        await hide_keyboard()
         nonlocal birth_input_mode
         birth_input_mode = e.control.value
         page.session.store.set("birth_input_mode", birth_input_mode)
@@ -337,7 +315,7 @@ def build_view(page: ft.Page):
 
     def build_birth_choice():
         choice = ft.Column(
-            height=182,
+            expand=True,
             controls=[
                 dogdog.radio_group(
                     value="birthday_known",
@@ -369,7 +347,7 @@ def build_view(page: ft.Page):
                     ]
                 ),
                 ft.Row(
-                    spacing=14,
+                    height=48,
                     controls=[
                         age_year_dropdown,
                         age_month_dropdown,
@@ -383,7 +361,8 @@ def build_view(page: ft.Page):
     ####################################################################################################
     ### 애완동물 성별 / 중성화 여부 선택
     ####################################################################################################
-    def gender_event(e):
+    async def gender_event(e):
+        await hide_keyboard()
         page.session.store.set("pet_gender", e.control.value)
     gender_dropdown = dogdog.dropdown_menu(
         label="성별 / 중성화",
@@ -402,10 +381,13 @@ def build_view(page: ft.Page):
     ### 애완동물 무게 입력
     ####################################################################################################
     def weight_event(e):
-        page.session.store.set("pet_weight", e.control.value)
+        try:
+            page.session.store.set("pet_weight", float(e.control.value))
+        except ValueError:
+            pass
     weight_field = dogdog.input_textfield(hint_text="무게를 입력해주세요.", suffix="Kg", input_type="int", on_change=weight_event)
     if page.session.store.get("pet_weight"):
-        weight_field.value = page.session.store.get("pet_weight")
+        weight_field.value = page.session.store.get("pet_weight") # type: ignore
 
     body_content = ft.Column(
         spacing=12,

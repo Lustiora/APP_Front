@@ -1,5 +1,5 @@
 import flet as ft
-from junhwan.components import build_screen_body
+from components import build_screen_body
 import component as dogdog
 
 
@@ -16,19 +16,17 @@ def build_view(page: ft.Page):
         9: "✅ 9단계:\n목, 척추, 꼬리 부분에 매우 많은 양의 지방이 축적되어 살이 접힙니다. 허리 구분이 불가능하고 사지(다리)에도 지방이 축적되며 복부 팽창이 심한 상태입니다.",
     }
 
-    body_score_text = ft.Text(
+    body_score_text = dogdog.basic_text(
         value="현재 선택: 6단계",
         size=14,
-        weight=ft.FontWeight.W_500,
+        weight="bold",
         color=ft.Colors.BLUE_700,
-        text_align=ft.TextAlign.CENTER,
     )
 
-    body_score_description_text = ft.Text(
+    body_score_description_text = dogdog.basic_text(
         value=body_score_descriptions[6],
         size=14,
-        color=ft.Colors.BLACK,
-        weight=ft.FontWeight.W_500,
+        weight="bold",
     )
 
     def slider_changed(e):
@@ -46,7 +44,6 @@ def build_view(page: ft.Page):
         label="{value}",
         active_color=ft.Colors.BLUE_400,
         inactive_color=ft.Colors.BLUE_100,
-        thumb_color=ft.Colors.WHITE,
         on_change=slider_changed,
         width=330,
     )
@@ -55,7 +52,7 @@ def build_view(page: ft.Page):
     if page.session.store.get("body_score"):
         score = page.session.store.get("body_score")
         body_score_slider.value = score
-        body_score_description_text.value = body_score_descriptions[score]
+        body_score_description_text.value = body_score_descriptions[score] # type: ignore
         body_score_text.value = f"현재 선택: {score}단계"
 
     body_controls = [

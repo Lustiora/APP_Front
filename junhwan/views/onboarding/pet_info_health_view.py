@@ -1,5 +1,5 @@
 import flet as ft
-from junhwan.components import build_screen_body
+from components import build_screen_body
 import component as dogdog
 
 
@@ -14,7 +14,7 @@ def build_view(page: ft.Page):
             if page.session.store.get("allergy"):
                 page.session.store.remove("allergy")
 
-    allergy = dogdog.input_textfield(hint_text="반려동물의 알레르기를 적어주세요", max_length=None, on_change=on_allergy_change)
+    allergy = dogdog.input_textfield(hint_text="반려동물의 알레르기를 적어주세요", max_length=None, on_change=on_allergy_change) # type: ignore
     allergy.visible = False
 
     def on_allergy_radio_change(e):
@@ -37,7 +37,7 @@ def build_view(page: ft.Page):
     if page.session.store.get("allergy"):
         allergy.visible = True
         allergy_radio.value = "yes"
-        allergy.value = page.session.store.get("allergy")
+        allergy.value = page.session.store.get("allergy") # type: ignore
 
     ####################################################################################################
     ### 질병
@@ -49,7 +49,7 @@ def build_view(page: ft.Page):
             if page.session.store.get("disease"):
                 page.session.store.remove("disease")
 
-    disease = dogdog.input_textfield(hint_text="반려동물의 질병을 적어주세요", max_length=None, on_change=on_disease_change)
+    disease = dogdog.input_textfield(hint_text="반려동물의 질병을 적어주세요", max_length=None, on_change=on_disease_change) # type: ignore
     disease.visible = False
 
     def on_disease_radio_change(e):
@@ -72,7 +72,7 @@ def build_view(page: ft.Page):
     if page.session.store.get("disease"):
         disease.visible = True
         disease_radio.value = "yes"
-        disease.value = page.session.store.get("disease")
+        disease.value = page.session.store.get("disease") # type: ignore
 
     body_controls = [
         dogdog.basic_text(value="알레르기", weight="bold"),

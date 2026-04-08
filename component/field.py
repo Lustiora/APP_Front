@@ -14,11 +14,6 @@ def picker_field(text, on_click=None, icon=None):
         text = text.strftime("%Y-%m-%d")
         # 2026-03-31 15:00:00.000Z -> 26-03-31
 
-    #### 선택된 파일 문자열 형식
-    elif type(text) == ft.controls.services.file_picker.FilePickerFile:
-        font_color = None
-        text = text.name
-
     ### 아이콘 사용 여부에 따른 레이아웃 조정
     if icon:
         contents = [
@@ -38,14 +33,13 @@ def picker_field(text, on_click=None, icon=None):
 
     ### 반환 레이아웃
     return ft.Container(
-        expand=True,
-        height=50,
+        height=48,
         border=ft.Border.all(color=ft.Colors.OUTLINE_VARIANT),
         border_radius=10,
         padding=ft.Padding.only(left=14, right=14),
         on_click=on_click,
         content=ft.Row(
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-            controls=contents
+            controls=contents # type: ignore
         )
     )

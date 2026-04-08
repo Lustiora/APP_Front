@@ -1,6 +1,6 @@
 import flet as ft
 
-from junhwan.components import build_screen_body
+from components import build_screen_body
 import component as dogdog
 
 def build_view(page: ft.Page):
@@ -12,6 +12,7 @@ def build_view(page: ft.Page):
         value="30",
         on_change=radio_on_change,
         layout_type="column",
+        spacing=12,
         contents=[
             ft.Radio(value="30", label="하루 30분 이상"),
             ft.Radio(value="60", label="하루 60분 이상"),

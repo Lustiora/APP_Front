@@ -2,10 +2,11 @@ import asyncio
 import flet as ft
 import views
 import re, hashlib
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
-
 from components import about_dog, arrow_back, bottom_continue_button
+
+import component as dogdog
 
 # ─────────────────────────────────────────────
 # 🟦 화면 이동 순서표
@@ -19,7 +20,6 @@ ROUTES = [
     "/pet_info_food",
     "/signup_success",
 ]
-
 
 # ─────────────────────────────────────────────
 # 🟦 route별 실제 화면 생성 함수 연결표
@@ -53,12 +53,6 @@ def main(page: ft.Page):
     page.spacing = 0
     page.scroll = ft.ScrollMode.HIDDEN
     page.theme_mode = ft.ThemeMode.LIGHT
-
-    # ─────────────────────────────────────────────
-    # 🟪 FilePicker 초기화
-    # ─────────────────────────────────────────────
-    page.profile_image_picker = ft.FilePicker()
-    page.overlay.append(page.profile_image_picker)
 
     # ─────────────────────────────────────────────
     # 🟦 현재 보고 있는 페이지 번호 저장
@@ -109,6 +103,9 @@ def main(page: ft.Page):
     top_appbar = ft.Container(
         width=float("inf"),
         padding=ft.Padding.only(left=16, right=16, top=12, bottom=12),
+        clip_behavior=ft.ClipBehavior.HARD_EDGE, # 크기가 줄어들 때 내용물이 삐져나오지 않도록 방지
+        animate=ft.Animation(ANIMATION_MS, ANIMATION_CURVE),
+        animate_opacity=ft.Animation(ANIMATION_MS, ANIMATION_CURVE),
     )
 
     # ─────────────────────────────────────────────
@@ -117,6 +114,9 @@ def main(page: ft.Page):
     fixed_button = ft.Container(
         width=float("inf"),
         padding=ft.Padding.only(left=16, right=16, top=10, bottom=20),
+        clip_behavior=ft.ClipBehavior.HARD_EDGE,
+        animate=ft.Animation(ANIMATION_MS, ANIMATION_CURVE),
+        animate_opacity=ft.Animation(ANIMATION_MS, ANIMATION_CURVE),
     )
 
     # ─────────────────────────────────────────────
@@ -157,18 +157,30 @@ def main(page: ft.Page):
     def apply_shell_by_index(index: int):
         # print(f"ROUTES: {ROUTES[index]}")
 
+        # 다른 화면 전환 시 투명도와 높이를 기본값으로 부드럽게 복원합니다.
+        top_appbar.opacity = 1
+        top_appbar.height = None
+        fixed_button.opacity = 1
+        fixed_button.height = None
+
         if ROUTES[index] == "/signup_success":
-            top_appbar.content = None
-            fixed_button.content = None
+            top_appbar.opacity = 0
+            top_appbar.height = 0
+            top_appbar.padding = 0
+            fixed_button.opacity = 0
+            fixed_button.height = 0
+            fixed_button.padding = 0
             return
 
         if ROUTES[index] == "/signup":
             top_appbar.content = about_dog(1)
+            top_appbar.padding = ft.Padding.only(left=16, right=16, top=12, bottom=12)
             fixed_button.content = ft.Row(
                 controls=[
                     bottom_continue_button(on_click=on_continue_click),
                 ]
             )
+            fixed_button.padding = ft.Padding.only(left=16, right=16, top=10, bottom=20)
         else:
             top_appbar.content = about_dog()
             top_appbar.padding = ft.Padding.only(left=16, right=16, top=12, bottom=12)
@@ -271,29 +283,15 @@ def main(page: ft.Page):
     # ─────────────────────────────────────────────
     # 🟥 핵심 2: Continue 버튼 클릭 시 다음 화면
     # ─────────────────────────────────────────────
-    api_push = {
-        "email": None,
-        "name": None,
-        "password": None,
-        "nickname": None,
-        "image_path": None,
-        "breed_id": None,
-        "birth": None,
-        "sex": None,
-        "weight": None,
-        "bcs": None,
-        "feeding_count": None,
-        "daily_walks": None,
-        "allergies": None,
-        "medical_history": None,
-        "food_id": None,
-        "food_weight": None
-    }
+    api_push = {}
 
     async def on_continue_click(e):
         ####################################################################################################
         ### Null Check and API Push
         ####################################################################################################
+        def show_error(message: str):
+            return page.show_dialog(ft.SnackBar(content=dogdog.basic_text(message), open=True))
+
         storage = page.session.store.get
 
         if ROUTES[current_index] == "/signup":
@@ -301,23 +299,23 @@ def main(page: ft.Page):
                 and storage("name")
                 and storage("password")
             ):
-                print(f"Null Check {ROUTES[current_index]}")
+                show_error("이메일, 이름, 비밀번호를 모두 입력해주세요.")
                 return
             else:
                 regex_email = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9._]+[@][a-zA-Z][A-Za-z.]+[.]\w{2,}')
-                if not re.fullmatch(regex_email, storage("email")):
-                    print("email 필터링됨")
+                if not re.fullmatch(regex_email, storage("email")): # type: ignore
+                    show_error("유효한 이메일 형식이 아닙니다.")
                     return
-                hash_pw = hashlib.sha256(storage("password").encode()).hexdigest()
+                hash_pw = hashlib.sha256(storage("password").encode()).hexdigest() # type: ignore
                 print(f"Check {ROUTES[current_index]}")
                 api_push.update({"email": storage("email"), "name": storage("name"), "password": hash_pw})
         elif ROUTES[current_index] == "/pet_info":
             birth = None
             if storage("selected_birth"):
-                birth = str(storage("selected_birth"))
+                birth = str(storage("selected_birth").strftime("%Y-%m-%d")) # type: ignore
             elif storage("pet_age_year") and storage("pet_age_month"):
-                age_month = int(storage("pet_age_month").split()[0])
-                age_year = int(storage("pet_age_year").split()[0])
+                age_month = int(storage("pet_age_month").split()[0]) # type: ignore
+                age_year = int(storage("pet_age_year").split()[0]) # type: ignore
                 birth = str(date.today() - relativedelta(months=age_month, years=age_year))
             if not (storage("pet_name")
                 and storage("breed_id")
@@ -325,16 +323,46 @@ def main(page: ft.Page):
                 and storage("pet_gender")
                 and storage("pet_weight")
             ):
-                print(f"Null Check {ROUTES[current_index]}")
+                show_error("이름, 품종, 생년월일, 성별, 무게를 모두 입력해주세요.")
                 return
             else:
+                if int(storage("pet_weight")) >= 120: # type: ignore
+                    show_error("정상적인 무게를 입력해주세요.")
+                try:
+                    pet_weight_str = str(storage("pet_weight"))
+                    weight_val = float(pet_weight_str)
+                    
+                    if weight_val <= 0 or weight_val >= 120:
+                        show_error("정상적인 무게를 입력해주세요.")
+                        return
+                        
+                    if "." in pet_weight_str and len(pet_weight_str.split(".")[1]) > 2:
+                        show_error("무게는 소수점 두 자리까지만 입력 가능합니다.")
+                        return
+                except ValueError:
+                    show_error("올바른 숫자 형식으로 무게를 입력해주세요.")
+                    return
+
+                sex = 2 # 암컷 중성화
+                is_neutered = True # 암컷 중성화
+                
+                if (storage("pet_gender")) == "수컷":
+                    sex = 1
+                    is_neutered = False
+                elif storage("pet_gender") == "암컷": # 암컷
+                    sex = 2
+                    is_neutered = False
+                if storage("pet_gender") == "수컷 (중성화)": # 수컷 중성화
+                    sex = 1
+                    is_neutered = True
                 print(f"Check {ROUTES[current_index]}")
-                api_push.update({"nickname": storage("pet_name"), "image_path": storage("image_path"),
-                                 "breed_id": storage("breed_id"), "birth": birth,
-                                 "sex": storage("pet_gender"), "weight": storage("pet_weight")})
+                api_push.update(
+                    {"nickname": storage("pet_name"), "image_path": storage("image_path"),
+                    "breed_id": storage("breed_id"), "birth": birth,
+                    "sex": sex, 'is_neutered': is_neutered, "weight": storage("pet_weight")})
         elif ROUTES[current_index] == "/pet_info_obesity":
             if not storage("body_score"):
-                print(f"Null Check {ROUTES[current_index]}")
+                show_error("체형 단계를 선택해주세요.")
                 return
             else:
                 print(f"Check {ROUTES[current_index]}")
@@ -344,24 +372,24 @@ def main(page: ft.Page):
             meals = [storage("breakfast"), storage("lunch"), storage("dinner")]
             has_meals = any(meals)
             if not (storage("radio_time") and has_meals):
-                print(f"Null Check {ROUTES[current_index]}")
+                show_error("급여 시간(최소 1개)과 산책 시간을 선택해주세요.")
                 return
             else:
                 feeding_count = sum(1 for meal in meals if meal)
                 print(f"Check {ROUTES[current_index]}")
-                daily_walks = str(timedelta(minutes=int(storage("radio_time"))))
+                daily_walks = str(timedelta(minutes=int(storage("radio_time")))) # type: ignore
                 api_push.update({"feeding_count": feeding_count, "daily_walks": daily_walks})
         elif ROUTES[current_index] == "/pet_info_health":
             # Store health/allergy info if available in session
             print(f"Check {ROUTES[current_index]}")
             api_push.update({
-                "allergies": storage("allergies") if storage("allergies") else [],
-                "medical_history": storage("medical_history") if storage("medical_history") else []
+                "allergies": storage("allergies") if storage("allergies") else None,
+                "medical_history": storage("medical_history") if storage("medical_history") else None
             })
         elif ROUTES[current_index] == "/pet_info_food":
             if not (storage("food_id")
                     and storage("food_weight")):
-                print(f"Null Check {ROUTES[current_index]}")
+                show_error("현재 급여 중인 사료와 잔여량을 선택/입력해주세요.")
                 return
             else:
                 print(f"Check {ROUTES[current_index]}")
@@ -388,6 +416,41 @@ def main(page: ft.Page):
             return
         await go_to_index(current_index - 1, direction=-1)
         # print(f"session keys: {page.session.store.get_keys()}")
+
+    # ─────────────────────────────────────────────
+    # 🟨 안드로이드 뒤로가기 및 앱 종료 팝업 처리
+    # ─────────────────────────────────────────────
+    async def close_app(e):
+        await page.window.destroy()  # 앱 최종 종료
+
+    def cancel_close(e):
+        exit_dialog.open = False
+        page.update()
+
+    exit_dialog = ft.AlertDialog(
+        modal=True,
+        title=dogdog.basic_text("앱 종료", weight="bold"),
+        content=dogdog.basic_text("앱을 종료하시겠습니까?"),
+        actions=[
+            ft.TextButton("아니요", on_click=cancel_close),
+            ft.TextButton("예", on_click=close_app),
+        ],
+        actions_alignment=ft.MainAxisAlignment.END,
+    )
+    page.overlay.append(exit_dialog)
+
+    def window_event(e):
+        if e.data == "close":
+            if current_index > 0 and ROUTES[current_index] != "/signup_success":
+                # 첫 화면이 아니고 회원가입 완료 화면도 아니면 이전 화면으로 이동
+                page.run_task(on_back_click, None)
+            else:
+                # 첫 화면이거나 완료 화면이면 앱 종료 팝업 띄우기
+                exit_dialog.open = True
+                page.update()
+
+    page.window.prevent_close = True
+    page.window.on_event = window_event
 
     # ─────────────────────────────────────────────
     # 🟨 브라우저 route가 바뀌었을 때 화면도 맞춰주기
@@ -418,7 +481,6 @@ def main(page: ft.Page):
                 spacing=0,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
-                    ft.Container(height=20),
                     top_appbar,
                     ft.Container(expand=True, content=body_stack),
                     fixed_button,
@@ -443,11 +505,11 @@ def main(page: ft.Page):
 
 
 # build test
-# flet build apk ./junhwan --verbose --arch arm64-v8a
+# flet build apk --verbose --arch arm64-v8a
 # app name = project name
 
 # if __name__ == "__main__":
-#     ft.app(target=main, assets_dir="assets")
+#     ft.run(main=main, assets_dir="assets")
 
 
 import logging, warnings

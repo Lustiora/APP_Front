@@ -1,5 +1,5 @@
 import flet as ft
-from junhwan.components import build_screen_body
+from components import build_screen_body
 import component as dogdog
 
 
