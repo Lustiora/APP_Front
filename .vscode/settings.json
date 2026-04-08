@@ -1,0 +1,8 @@
+{
+  "editor.fontSize": 16,
+  "files.autoSave": "afterDelay",
+  "editor.tabSize": 2,
+  "scm.compactFolders": false,
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "python-envs.pythonProjects": []
+}
