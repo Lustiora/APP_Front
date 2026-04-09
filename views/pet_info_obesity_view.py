@@ -1,5 +1,4 @@
 import flet as ft
-from components import build_screen_body
 import component as dogdog
 
 
@@ -68,4 +67,4 @@ def build_view(page: ft.Page):
     # 이유:
     # - 상단/하단은 main.py 에서 고정 관리
     # ─────────────────────────────────────────────
-    return build_screen_body(body_controls)
+    return dogdog.build_screen_body(body_controls)

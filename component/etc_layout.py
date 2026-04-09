@@ -1,12 +1,6 @@
 import flet as ft
 import component as dogdog
 
-# ─────────────────────────────────────────────
-# 🟨 수정 1: alignment=ft.Alignment.center 오류 수정
-# 이유:
-# - ft.Alignment.center 는 존재하지 않음
-# - 정가운데 정렬은 ft.Alignment(0, 0) 으로 써야 함
-# ─────────────────────────────────────────────
 def arrow_back(on_click=None):
     return ft.Container(
         expand=1,
@@ -22,16 +16,8 @@ def about_dog(case=None):
     content = ft.Column(
         spacing=0,
         controls=[
-            ft.Text(
-                "About your Dog",
-                weight="Bold",
-                size=30,
-            ),
-            ft.Text(
-                "반려동물의 기본 정보를 입력하세요",
-                weight="Bold",
-                size=15,
-            ),
+            dogdog.basic_text(value="About your Dog", weight="Bold", size=30),
+            dogdog.basic_text(value="반려동물의 기본 정보를 입력하세요", weight="Bold", size=15),
         ],
     )
     if case == 1:
@@ -44,8 +30,8 @@ def about_dog(case=None):
             ],
         )
     return ft.Container(
-        height=100,
-        margin=ft.Margin.only(top=20),
+        height=140,
+        alignment=ft.Alignment.BOTTOM_CENTER,
         content=content
     )
 
@@ -98,16 +84,4 @@ def bottom_continue_button(on_click=None):
             text_color=ft.Colors.BLACK,
             on_click=on_click,
         ),
-    )
-
-
-def input_box(label=None, hint_text=None):
-    return ft.TextField(
-        width=350,
-        height=50,
-        border_radius=10,
-        border_color=ft.Colors.GREY_300,
-        focused_border_color=ft.Colors.GREY_400,
-        hint_text=hint_text,
-        label=label,
     )

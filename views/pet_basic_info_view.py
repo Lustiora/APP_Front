@@ -1,10 +1,6 @@
 import flet as ft
 import datetime
-
 import pg8000.dbapi as psycopg2
-# import psycopg2
-
-from components import  build_screen_body
 from .full_query import Breed
 import component as dogdog
 
@@ -426,4 +422,4 @@ def build_view(page: ft.Page):
 
     rebuild_body()
 
-    return build_screen_body([body_content])
+    return dogdog.build_screen_body([body_content])

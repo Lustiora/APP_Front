@@ -1,7 +1,3 @@
-/storage
 /build
-/.README.md.kate-swp
 __pycache__
 /.venv
-/junhwan/build
-/.idea
