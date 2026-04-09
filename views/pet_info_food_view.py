@@ -1,11 +1,6 @@
 import flet as ft
-
 import pg8000.dbapi as psycopg2
-# import psycopg2
-
-from components import build_screen_body , go_next , input_box
 from .full_query import Product
-
 import component as dogdog
 
 # ✅ DB 연결 함수
@@ -260,4 +255,4 @@ def build_view(page: ft.Page):
 
     rebuild_body()
 
-    return build_screen_body([body_content])
+    return dogdog.build_screen_body([body_content])

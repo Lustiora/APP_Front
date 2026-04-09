@@ -1,5 +1,4 @@
 import flet as ft
-from components import build_screen_body
 import component as dogdog
 
 
@@ -87,4 +86,4 @@ def build_view(page: ft.Page):
     # ─────────────────────────────────────────────
     # 🟦 체크: 본문만 반환
     # ─────────────────────────────────────────────
-    return build_screen_body(body_controls)
+    return dogdog.build_screen_body(body_controls)

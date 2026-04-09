@@ -11,12 +11,8 @@ def build_screen_body(body_controls: list):
     #   여기서는 body 내용만 감싸줌
     # ─────────────────────────────────────────────
     return ft.Column(
-        width=350,
         spacing=12,
         horizontal_alignment=ft.CrossAxisAlignment.START,
         scroll=ft.ScrollMode.AUTO,
-        controls=[
-            *body_controls,
-            ft.Container(height=20),
-        ],
+        controls=[*body_controls],
     )
