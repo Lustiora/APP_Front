@@ -15,6 +15,7 @@ def get_connection():
     )
 
 def build_view(page: ft.Page):
+
     # 🟩 현재 선택된 사료 이름 상태값
     selected_food_id = None
     selected_food_text = "현재 급여 중인 사료를 선택해주세요."
@@ -22,8 +23,14 @@ def build_view(page: ft.Page):
         selected_food_text = page.session.store.get("food_name")
 
 
+    # 선택된 사료의 중량
+    selected_product_weight = "사료의 용량을 선택해주세요."
+
     def on_food_weight_change(e):
-        page.session.store.set("food_weight", int(e.control.value))
+        try:
+            page.session.store.set("food_weight", int(e.control.value))
+        except ValueError:
+            pass
     selected_food_weight = dogdog.input_textfield(
         hint_text="현재 급여 중인 사료 잔여량을 적어주세요", input_type="int", suffix="g",
         on_change=on_food_weight_change
@@ -210,8 +217,54 @@ def build_view(page: ft.Page):
         rebuild_body()
 
         harim_bottom_tip_sheet.open = False
+        product_weight_list.visible = True
+        load_product_weight_list(selected_food_id)
         
 
+    # 선택 상품 무게 리스트
+
+    def food_product_weight_set(e):
+        page.session.store.set("product_id", e.control.value)
+        try:
+            weight = e.control.text.split("g")[0]
+            page.session.store.set("product_weight", int(weight))
+        except ValueError:
+            pass
+    
+    product_weight_list = dogdog.dropdown_menu(
+        label=selected_product_weight,
+        event=food_product_weight_set,
+        options=[]
+    )
+
+    def load_product_weight_list(selected_food_id):
+
+        if not ensure_db_connection():
+            return None
+
+        try:
+            cursor = conn.cursor() # type: ignore
+            cursor.execute(Product.product_weight_list,(selected_food_id,))
+            rows = cursor.fetchall()
+            conn.commit() # type: ignore
+            cursor.close()
+            if rows:
+                product_weight_list.options.clear()
+                for row in rows:
+                    product_weight_list.options.append(dogdog.dropdown_menu_option(key=row[0], text=f"{row[1]}g"),)
+        except Exception as err:
+            conn.rollback() # type: ignore
+            print(f"product_weight_list error: {err}")
+            return None
+    
+    if page.session.store.get("product_id"):
+        product_weight_list.visible = True
+        load_product_weight_list(page.session.store.get("food_id"))
+        product_weight_list.value = page.session.store.get("product_id") # type: ignore
+    else:
+        product_weight_list.visible = False
+
+    
     # 🟩 바텀시트
     harim_bottom_tip_sheet = dogdog.bottom_sheet(
         content=[
@@ -249,6 +302,7 @@ def build_view(page: ft.Page):
                 on_click=open_food_bottom_sheet,
                 icon=ft.Icons.KEYBOARD_ARROW_DOWN_ROUNDED
             ),
+            product_weight_list,
             dogdog.basic_text(value="사료 잔여량", weight="bold"),
             selected_food_weight
         ]

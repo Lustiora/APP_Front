@@ -31,7 +31,7 @@ def about_dog(case=None):
         )
     return ft.Container(
         height=140,
-        alignment=ft.Alignment.BOTTOM_CENTER,
+        padding=ft.Padding.only(top=40),
         content=content
     )
 
