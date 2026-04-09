@@ -1,0 +1,12 @@
+[tool.flet.app]
+exclude = [
+    ".idea",
+    ".test",
+    ".venv",
+    ".git",
+    "__pycache__",
+    ".vscode",
+    ".gitignore",
+    "flet_linux_basic.sh",
+    "flet_windows_basic.bat"
+]

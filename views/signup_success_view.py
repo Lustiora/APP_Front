@@ -18,6 +18,7 @@ def build_view(page: ft.Page):
                     height=150,
                 ),
                 dogdog.basic_text(value="회원 가입이 완료되었습니다.", weight="bold", size=20),
+                dogdog.basic_text(value=page.session.store.get("api_push"))
             ],
         ),
     )

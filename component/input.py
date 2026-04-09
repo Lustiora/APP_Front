@@ -2,7 +2,7 @@ import flet as ft
 
 def input_textfield(
         max_length=10,
-        text_filter=ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Z]*$", replacement_string=""),
+        text_filter=ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Zㆍ]*$", replacement_string=""),
         label=None, hint_text=None, suffix=None, input_type=None, on_change=None, password=None, value=None
 ):
     if input_type == "int":
@@ -33,7 +33,7 @@ def input_textfield(
     )
 
 def list_input_textfield(hint_text=None, suffix=None, input_type=None, on_change=None):
-    text_filter = ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Z]*$")
+    text_filter = ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Zㆍ]*$")
     if input_type == "int":
         text_filter = ft.InputFilter(regex_string=r"^[0-9-.]*$", replacement_string="")
     return ft.TextField(

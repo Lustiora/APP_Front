@@ -37,3 +37,12 @@ class Product:
         WHERE LOWER(product_name) LIKE LOWER(%s)
         ORDER BY product_name ASC
         """
+    
+    product_weight_list\
+        = """
+        SELECT product_id , weight
+        FROM "OPD".product
+        WHERE product_detail_id = %s
+        AND active IS TRUE
+        ORDER BY weight ASC
+        """

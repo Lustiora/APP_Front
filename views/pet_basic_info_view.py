@@ -18,17 +18,15 @@ def get_connection():
     return conn
 
 def build_view(page: ft.Page):
+    
+    # 입력창 커서 탈출용
+    background_input_debug = dogdog.input_textfield()
+    background_input_debug.margin = 0
+    background_input_debug.visible = False
+
     conn = None
     breed_error_text = None
     selected_breed_id = None
-
-    # 🟨 키보드 숨김용 투명/더미 입력창 추가
-    dummy_input = ft.TextField(width=0, height=0, opacity=0, read_only=True)
-    if dummy_input not in page.overlay:
-        page.overlay.append(dummy_input)
-
-    async def hide_keyboard():
-        await dummy_input.focus()
 
     ####################################################################################################
     ### 애완동물 이름 입력
@@ -55,8 +53,11 @@ def build_view(page: ft.Page):
     file_picker = ft.FilePicker()
 
     async def pick_profile_image(e):
+        background_input_debug.visible = True
+        background_input_debug.focus() # type: ignore
+        background_input_debug.visible = False
+        print('check')
         nonlocal selected_profile_image_text
-        await hide_keyboard()
 
         files = await file_picker.pick_files(
             allow_multiple=False,
@@ -90,6 +91,7 @@ def build_view(page: ft.Page):
             image_container.image = None
 
         rebuild_body()
+        
         page.update() # UI 업데이트를 확인합니다.
 
     ####################################################################################################
@@ -244,10 +246,13 @@ def build_view(page: ft.Page):
         page.overlay.append(breed_bottom_sheet)
 
     async def open_breed_bottom_sheet(e):
-        await hide_keyboard()
+        background_input_debug.visible = True
+        background_input_debug.focus() # type: ignore
+        background_input_debug.visible = False
         breed_search_field.value = ""
         update_breed_list("")
         breed_bottom_sheet.open = True
+        
 
     ####################################################################################################
     ### 애완동물 생년월일 선택
@@ -257,20 +262,20 @@ def build_view(page: ft.Page):
     def open_date_picker(e):
         date_picker.open = True
     async def age_year_event(e):
-        await hide_keyboard()
         page.session.store.set("pet_age_year", e.control.value)
         if page.session.store.get("selected_birth"):
             page.session.store.remove("selected_birth")
+        
     async def age_month_event(e):
-        await hide_keyboard()
         page.session.store.set("pet_age_month", e.control.value)
         if page.session.store.get("selected_birth"):
             page.session.store.remove("selected_birth")
+        
     async def change_birth_mode(e):
-        await hide_keyboard()
         nonlocal birth_input_mode
         birth_input_mode = e.control.value
         page.session.store.set("birth_input_mode", birth_input_mode)
+        
         rebuild_body()
 
     selected_birth_text = "생년월일 선택"
@@ -280,13 +285,13 @@ def build_view(page: ft.Page):
     def on_date_change(e):
         nonlocal selected_birth_text
         if e.control.value:
-            selected_birth_text = e.control.value
+            selected_birth_text = e.control.value + (datetime.timedelta(hours=9))
             page.session.store.set("selected_birth", selected_birth_text)
             if page.session.store.get("pet_age_year") and page.session.store.get("pet_age_month"):
                 page.session.store.remove("pet_age_year")
                 page.session.store.remove("pet_age_month")
             rebuild_body()
-
+    
     date_picker = ft.DatePicker(
         first_date=datetime.datetime(2000, 1, 1),
         last_date=datetime.datetime.now(),
@@ -310,6 +315,10 @@ def build_view(page: ft.Page):
         age_month_dropdown.value = page.session.store.get("pet_age_month")
 
     def build_birth_choice():
+        background_input_debug.visible = True
+        background_input_debug.focus() # type: ignore
+        background_input_debug.visible = False
+        
         choice = ft.Column(
             expand=True,
             controls=[
@@ -358,8 +367,8 @@ def build_view(page: ft.Page):
     ### 애완동물 성별 / 중성화 여부 선택
     ####################################################################################################
     async def gender_event(e):
-        await hide_keyboard()
         page.session.store.set("pet_gender", e.control.value)
+        
     gender_dropdown = dogdog.dropdown_menu(
         label="성별 / 중성화",
         event=gender_event,
@@ -418,6 +427,7 @@ def build_view(page: ft.Page):
             ft.Container(height=8),
             dogdog.basic_text("무게", weight="bold"),
             weight_field,
+            background_input_debug
         ]
 
     rebuild_body()

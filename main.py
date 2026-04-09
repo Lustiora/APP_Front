@@ -51,6 +51,17 @@ def main(page: ft.Page):
     page.spacing = 0
     page.scroll = ft.ScrollMode.HIDDEN
     page.theme_mode = ft.ThemeMode.LIGHT
+    page.fonts = {"Pretendard": "fonts/Pretendard-Regular.otf"}
+    page.theme = ft.Theme(
+        font_family="Pretendard",
+        color_scheme=ft.ColorScheme(
+            primary=ft.Colors.BLACK,
+            on_primary=ft.Colors.WHITE,
+            surface=ft.Colors.WHITE,
+            on_surface=ft.Colors.BLACK,
+            on_surface_variant=ft.Colors.BLACK,
+        ),
+    )
 
     # ─────────────────────────────────────────────
     # 🟦 현재 보고 있는 페이지 번호 저장
@@ -288,7 +299,7 @@ def main(page: ft.Page):
         ### Null Check and API Push
         ####################################################################################################
         def show_error(message: str):
-            return page.show_dialog(ft.SnackBar(content=dogdog.basic_text(message), open=True))
+            return page.show_dialog(ft.SnackBar(dogdog.basic_text(message), open=True))
 
         storage = page.session.store.get
 
@@ -381,20 +392,26 @@ def main(page: ft.Page):
             # Store health/allergy info if available in session
             print(f"Check {ROUTES[current_index]}")
             api_push.update({
-                "allergies": storage("allergies") if storage("allergies") else None,
-                "medical_history": storage("medical_history") if storage("medical_history") else None
+                "allergy": storage("allergy"),
+                "disease": storage("disease")
             })
         elif ROUTES[current_index] == "/pet_info_food":
-            if not (storage("food_id")
+            if not (storage("product_id")
                     and storage("food_weight")):
-                show_error("현재 급여 중인 사료와 잔여량을 선택/입력해주세요.")
+                show_error("현재 급여 중인 사료와 용량, 잔여량을 선택/입력해주세요.")
                 return
             else:
+                if storage("food_weight") >= storage("product_weight"): # type: ignore
+                    show_error("정상적인 잔여량을 입력해주세요.")
+                    return
                 print(f"Check {ROUTES[current_index]}")
-                api_push.update({"food_id": storage('food_id'), "food_weight": storage('food_weight')})
+                api_push.update(
+                    {"product_id": storage('product_id'), 
+                    "food_weight": storage('food_weight')})
                 
                 # result = await register_user_and_pet(api_push)
                 print("Final API Push Data:", api_push)
+                page.session.store.set("api_push", api_push)
                 
                 # Navigate to success page
                 await go_to_index(ROUTES.index("/signup_success"), direction=1)
@@ -414,41 +431,6 @@ def main(page: ft.Page):
             return
         await go_to_index(current_index - 1, direction=-1)
         # print(f"session keys: {page.session.store.get_keys()}")
-
-    # ─────────────────────────────────────────────
-    # 🟨 안드로이드 뒤로가기 및 앱 종료 팝업 처리
-    # ─────────────────────────────────────────────
-    async def close_app(e):
-        await page.window.destroy()  # 앱 최종 종료
-
-    def cancel_close(e):
-        exit_dialog.open = False
-        page.update()
-
-    exit_dialog = ft.AlertDialog(
-        modal=True,
-        title=dogdog.basic_text("앱 종료", weight="bold"),
-        content=dogdog.basic_text("앱을 종료하시겠습니까?"),
-        actions=[
-            ft.TextButton("아니요", on_click=cancel_close),
-            ft.TextButton("예", on_click=close_app),
-        ],
-        actions_alignment=ft.MainAxisAlignment.END,
-    )
-    page.overlay.append(exit_dialog)
-
-    def window_event(e):
-        if e.data == "close":
-            if current_index > 0 and ROUTES[current_index] != "/signup_success":
-                # 첫 화면이 아니고 회원가입 완료 화면도 아니면 이전 화면으로 이동
-                page.run_task(on_back_click, None)
-            else:
-                # 첫 화면이거나 완료 화면이면 앱 종료 팝업 띄우기
-                exit_dialog.open = True
-                page.update()
-
-    page.window.prevent_close = True
-    page.window.on_event = window_event
 
     # ─────────────────────────────────────────────
     # 🟨 브라우저 route가 바뀌었을 때 화면도 맞춰주기
@@ -502,20 +484,24 @@ def main(page: ft.Page):
     page.run_task(page.push_route, ROUTES[current_index])
 
 
+
+# import logging, warnings
+# level=logging.INFO
+# logging.basicConfig(level=level)
+# warnings.filterwarnings("ignore")
+#
+# if __name__ == "__main__":
+#     import webbrowser, os
+#     if os.getenv("FLET_NO_BROWSER"):
+#         webbrowser.open = lambda *args, **kwargs: None
+#
+#     # Browser Test
+#     ft.run(main, assets_dir="assets", view=ft.AppView.WEB_BROWSER, port=34636)
+
 # build test
-# flet build apk --verbose --arch arm64-v8a
+# flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a
 # app name = project name
 
-# if __name__ == "__main__":
-#     ft.run(main=main, assets_dir="assets")
-
-
-import logging, warnings
-level=logging.INFO
-logging.basicConfig(level=level)
-warnings.filterwarnings("ignore")
+# APP Test
 if __name__ == "__main__":
-    import webbrowser, os
-    if os.getenv("FLET_NO_BROWSER"):
-        webbrowser.open = lambda *args, **kwargs: None
-    ft.run(main, assets_dir="assets", view=ft.AppView.WEB_BROWSER, port=34636) # test
+    ft.run(main=main, assets_dir="assets")

@@ -14,9 +14,9 @@ def dropdown_menu(label, event, options):
         options=options
     )
 
-def dropdown_menu_option(text:str, icon=None, icon_color=None):
+def dropdown_menu_option(text:str, icon=None, icon_color=None, key=None):
     return ft.dropdown.Option(
-        # key=key,
+        key=key,
         text=text,
         trailing_icon=ft.Icon(icon=icon, color=icon_color, size=30), # type: ignore
     )
