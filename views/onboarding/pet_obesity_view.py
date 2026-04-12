@@ -54,7 +54,7 @@ def pet_obesity_view(page: ft.Page):
     if storage.get(key="body_score"):
         score = storage.get(key="body_score")
         body_score_slider.value = score
-        body_score_description_text.value = Default.body_score_descriptions[score] # type: ignore
+        body_score_description_text.value = body_score_descriptions[score] # type: ignore
         body_score_text.value = f"현재 선택: {score}단계"
     else:
         storage.set(key="body_score", value=6)

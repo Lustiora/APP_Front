@@ -1,11 +1,12 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
 import views as views
+import component as dogdog
 test_page = ""
 # -------------------------------------------------------------------------------------------------------
 # flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a
 # -------------------------------------------------------------------------------------------------------
-test_page = "Browser" # APP Test 시 주석 처리
+# test_page = "Browser" # APP Build Test 시 주석 처리
 # -------------------------------------------------------------------------------------------------------
 class Front_dogdog:
     def __init__(self, page):
@@ -13,10 +14,7 @@ class Front_dogdog:
         # Default Page Value
         # -----------------------------------------------------------------------------------------------
         self.page = page
-        page.bgcolor = "#FFFFFF"
         page.title = "Dog Dog"
-        page.spacing = 0
-        page.padding = 20
         page.theme_mode = ft.ThemeMode.LIGHT
         page.fonts = {"Pretendard": "fonts/Pretendard-Regular.otf"}
         page.theme = ft.Theme(
@@ -28,42 +26,54 @@ class Front_dogdog:
                 on_surface=ft.Colors.BLACK,
                 on_surface_variant=ft.Colors.BLACK,
         ))
+        self.page.on_route_change = self.route_change
+        self.page.on_view_pop = self.handle_back
         # -----------------------------------------------------------------------------------------------
-        # Front Page
+        # Init First View
         # -----------------------------------------------------------------------------------------------
-        self.main_column = ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER, expand=True)
-        self.layout = ft.Container(expand=True, on_click=self.page_click, content=self.main_column)
-        page.add(self.layout)
-        # -----------------------------------------------------------------------------------------------
-        # Dummy Focus Field
-        # -----------------------------------------------------------------------------------------------        
-        self.focus_field = ft.TextField(
-            border_color=ft.Colors.TRANSPARENT, height=0, opacity=0,
-            focus_color=ft.Colors.TRANSPARENT, read_only=True
-        )
-        # -----------------------------------------------------------------------------------------------
-        # First Page
-        # -----------------------------------------------------------------------------------------------
-        self.load_page(page_name="sign_up")
+        self.page.views.clear()
+        self.page.go("/sign_up")
     # ---------------------------------------------------------------------------------------------------
-    # Dummy Focus Field Event
-    # ---------------------------------------------------------------------------------------------------  
-    async def page_click(self, e):
-        if self.focus_field:
-            await self.focus_field.focus()
+    # Route Change & Android OnBackPressedCallback Event
+    # ---------------------------------------------------------------------------------------------------
+    def route_change(self, e):
+        route = e.route
+        if len(self.page.views) > 1 and self.page.views[-2].route == route:
+            self.page.views.pop()
             self.page.update()
+        elif len(self.page.views) == 0 or self.page.views[-1].route != route:
+            self.push_view(page_name=route)
+    def handle_back(self, e=None):
+        if len(self.page.views) > 1:
+            self.page.views.pop()
+            self.page.go(self.page.views[-1].route)
     # ---------------------------------------------------------------------------------------------------
-    # Page Load
-    # ---------------------------------------------------------------------------------------------------
-    def load_page(self, page_name):
-        basic_content , self.focus_field = views.on_boarding_tile(
-            page=self.page, content_page=page_name, change_page_callback=self.load_page
+    # View Routing Event
+    # ---------------------------------------------------------------------------------------------------  
+    def push_view(self, page_name):
+        basic_content, focus_field = views.on_boarding_tile(
+            page=self.page, content_page=page_name, change_page_callback=self.page.go
         )
-        self.main_column.controls = basic_content # type: ignore
+        async def view_click(e):
+            if focus_field:
+                await focus_field.focus()
+                self.page.update()
+        main_column = ft.Column(
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
+            expand=True, controls=basic_content # type: ignore
+        )
+        layout = ft.Container(expand=True, on_click=view_click, content=main_column)
+        new_view = ft.View(
+            route=page_name, padding=20, spacing=0, bgcolor="#FFFFFF", controls=[layout]
+        )
+        self.page.views.append(new_view)
+        if page_name == "/sign_up_success":
+            new_view.bgcolor = ft.Colors.YELLOW
+            self.page.views.clear()
+            self.page.views.append(new_view)
         self.page.update()
 # -------------------------------------------------------------------------------------------------------
-def main(page: ft.Page):
-    front_end = Front_dogdog(page=page)
+def main(page: ft.Page): front_end = Front_dogdog(page=page)
 # -------------------------------------------------------------------------------------------------------
 if test_page == "Browser":
     import logging, warnings
@@ -71,10 +81,9 @@ if test_page == "Browser":
     logging.basicConfig(level=level)
     warnings.filterwarnings(action="ignore")
     if __name__ == "__main__":
-            import webbrowser, os
-            if os.getenv(key="FLET_NO_BROWSER"):
-                webbrowser.open = lambda *args: None
-            ft.run(main=main, assets_dir="assets", view=ft.AppView.WEB_BROWSER, port=34636)
+        import webbrowser, os
+        if os.getenv(key="FLET_NO_BROWSER"):
+            webbrowser.open = lambda *args: None
+        ft.run(main=main, assets_dir="assets", view=ft.AppView.WEB_BROWSER, port=34636)
 else:
-    if __name__ == "__main__":
-        ft.run(main=main, assets_dir="assets")
+    if __name__ == "__main__": ft.run(main=main, assets_dir="assets")

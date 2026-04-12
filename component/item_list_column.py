@@ -1,16 +1,22 @@
 import flet as ft
 import component as dogdog
 import pg8000.dbapi as psycopg2
+from dotenv import load_dotenv
+import os
 
-class DB:
-    conn = psycopg2.connect(
-        host="pg.nas6418.ddns.net",
-        port=9934,
-        database="Dogdog",
-        user="dog_5",
-        password="kosmo",
-    )
-
+def db_connect():
+    load_dotenv()
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv(key="DB_HOST"), # type: ignore
+            port=os.getenv(key="DB_PORT"), # type: ignore
+            database=os.getenv(key="DB_NAME"),
+            user=os.getenv(key="DB_USER"),
+            password=os.getenv(key="DB_PASSWORD")
+        )
+    except psycopg2.OperationalError as Err:
+        conn = None
+    return conn
 
 def item(list_key, list_value, select_key, select_value):
     is_checked = select_key == list_key
@@ -27,55 +33,60 @@ def item(list_key, list_value, select_key, select_value):
                     ft.Icons.CHECK,
                     color=ft.Colors.BLACK if is_checked else ft.Colors.TRANSPARENT,
                     size=18,
-                ),
-            ],
-        ),
+                )
+            ]
+        )
     )
 
 def update_item_list(list_column, query_search, query_list, select_key, select_value, keyword=""):
     rows = None
+    conn = None
     try:
-        conn = DB.conn
-        cursor = conn.cursor()
+        conn = db_connect()
+        cursor = conn.cursor() # type: ignore
         if keyword.strip():
             cursor.execute(query_search, (f"%{keyword.strip()}%",))
         else:
             cursor.execute(query_list)
         rows = cursor.fetchall()
-        conn.commit()
+        conn.commit() # type: ignore
         cursor.close()
+        try:
+            if rows:
+                list_column.controls.clear()
+                for row in rows:
+                    list_column.controls.append(
+                        item(list_key=row[0], list_value=row[1], 
+                            select_key=select_key, select_value=select_value)
+                    )
+            else:
+                list_column.controls = [
+                    ft.Container(content=dogdog.basic_text(value=f"검색 결과가 없습니다.", size=14))
+                ]
+        except:
+            pass
     except Exception as e:
-        conn.rollback()
-        print(f"Search or List Query Error.\n{e}")
-    try:
-        if rows:
-            list_column.controls.clear()
-            for row in rows:
-                list_column.controls.append(
-                    item(row[0], row[1], select_key, select_value)
-                )
+        if conn:
+            conn.rollback() # type: ignore
+            print(f"Search or List Query Error.\n{e}")
         else:
             list_column.controls = [
-                ft.Container(dogdog.basic_text(f"검색 결과가 없습니다.", size=14))
-            ]
-    except Exception as err:
-        list_column.controls = [
-            ft.Container(
-                alignment=ft.Alignment(0, 0),
-                content=dogdog.basic_text(
-                    "\n\n서버에 접속할 수 없습니다.\n잠시 후 다시 시도해주세요.", weight="bold", size=14
+                ft.Container(
+                    alignment=ft.Alignment(0, 0),
+                    content=dogdog.basic_text(
+                        value="\n\n서버에 접속할 수 없습니다.\n잠시 후 다시 시도해주세요.", weight="bold", size=14
+                    )
                 )
-            )
-        ]
-        print(err)
+            ]
 
 def dropdown_list(dropdown_menu, query_list, key):
+    conn = None
     try:
-        conn = DB.conn
-        cursor = conn.cursor()
+        conn = db_connect()
+        cursor = conn.cursor() # type: ignore
         cursor.execute(query_list,(key,))
         rows = cursor.fetchall()
-        conn.commit()
+        conn.commit() # type: ignore
         cursor.close()
         if rows:
             dropdown_menu.options.clear()
@@ -84,6 +95,7 @@ def dropdown_list(dropdown_menu, query_list, key):
                     dogdog.dropdown_menu_option(key=row[0], text=f"{row[1]}g"),
                 )
     except:
-        conn.rollback()
+        if conn:
+            conn.rollback() # type: ignore
         print("List Query Error")
         return

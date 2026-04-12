@@ -10,7 +10,7 @@ def continue_button(on_click=None):
         border_radius=10,
         alignment=ft.Alignment.CENTER,
         content=ft.Text(
-            "Continue",
+            value="Continue",
             size=14,
             weight=ft.FontWeight.W_500,
             color=ft.Colors.BLACK,
@@ -22,7 +22,7 @@ def arrow_back(on_click=None):
         expand=1,
         on_click=on_click,
         content=ft.Icon(
-            ft.Icons.ARROW_BACK_IOS,
+            icon=ft.Icons.ARROW_BACK_IOS,
             size=22,
         ),
     )

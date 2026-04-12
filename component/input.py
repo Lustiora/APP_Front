@@ -1,15 +1,16 @@
 import flet as ft
 
 def input_textfield(
-        max_length=10,
-        text_filter=ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Zㆍ]*$", replacement_string=""),
-        label=None, hint_text=None, suffix=None, input_type=None, on_change=None, password=None, value=None
+    max_length=10, label=None, hint_text=None, suffix=None, input_type=None, on_change=None, password=None,
+    text_filter=ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Zㆍ]*$", replacement_string="")
 ):
     if input_type == "int":
         text_filter = ft.InputFilter(regex_string=r"^[0-9.]*$", replacement_string="")
         max_length = 6
     if input_type == "password":
-        text_filter = ft.InputFilter(regex_string=r"^[a-zA-Z0-9.~\!\@\#\$\%\^\&\*\_\-\=\+]*$", replacement_string="")
+        text_filter = ft.InputFilter(
+            regex_string=r"^[a-zA-Z0-9.~\!\@\#\$\%\^\&\*\_\-\=\+]*$", replacement_string=""
+        )
         max_length = 20
         password = True
     if input_type == "email":
@@ -21,7 +22,7 @@ def input_textfield(
         can_reveal_password=password, # type: ignore
         hint_text=hint_text,
         on_change=on_change,
-        text_size=14, ## ft.Text Default Size
+        text_size=14, # ft.Text Default Size
         suffix=suffix,
         hint_style=ft.TextStyle(color=ft.Colors.OUTLINE),
         border=ft.InputBorder.OUTLINE,
@@ -34,13 +35,12 @@ def input_textfield(
 
 def list_input_textfield(hint_text=None, suffix=None, input_type=None, on_change=None):
     text_filter = ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Zㆍ]*$")
-    if input_type == "int":
-        text_filter = ft.InputFilter(regex_string=r"^[0-9-.]*$", replacement_string="")
+    if input_type == "int": text_filter = ft.InputFilter(regex_string=r"^[0-9-.]*$", replacement_string="")
     return ft.TextField(
         width=float('inf'),
         hint_text=hint_text,
         on_change=on_change,
-        text_size=14, ## ft.Text Default Size
+        text_size=14, # ft.Text Default Size
         suffix=suffix,
         hint_style=ft.TextStyle(color=ft.Colors.OUTLINE),
         border=ft.InputBorder.OUTLINE,
