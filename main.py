@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
-import refactoring.views as views
+import views as views
 test_page = ""
 # -------------------------------------------------------------------------------------------------------
 # flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a

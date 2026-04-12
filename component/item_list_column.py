@@ -1,5 +1,5 @@
 import flet as ft
-import refactoring.component as dogdog
+import component as dogdog
 import pg8000.dbapi as psycopg2
 
 class DB:

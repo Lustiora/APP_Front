@@ -1,4 +1,3 @@
-anyio
 certifi
 flet==0.81.0
 pg8000

@@ -11,5 +11,6 @@ exclude = [
     ".vscode",
     ".gitignore",
     "flet_linux_basic.sh",
-    "flet_windows_basic.bat"
+    "flet_windows_basic.bat",
+    ".original"
 ]

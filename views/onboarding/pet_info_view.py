@@ -1,8 +1,8 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
-import refactoring.component as dogdog
+import component as dogdog
 import pg8000.dbapi as psycopg2
-from refactoring.api.full_query import Breed
+from api.full_query import Breed
 import datetime
 # -------------------------------------------------------------------------------------------------------
 class PetInfoController:
