@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
-import refactoring.views as views
-import refactoring.component as dogdog
+import views as views
+import component as dogdog
 import re, hashlib
 from datetime import date
 from dateutil.relativedelta import relativedelta
@@ -30,7 +30,7 @@ def on_boarding_tile(page, content_page:str="signup", change_page_callback=None)
     if content_page == "sign_up":
         def sign_up_next(e):
             if storage("user_email") and storage("user_name") and storage("user_password"):
-                if not re.fullmatch(pattern=regex_email, storage("user_email")): # type: ignore
+                if not re.fullmatch(pattern=regex_email, string=storage("user_email")):
                     show_error(text="유효한 이메일 형식이 아닙니다.")
                     return
                 hash_pw = hashlib.sha256(data=storage("user_password").encode()).hexdigest() # type: ignore

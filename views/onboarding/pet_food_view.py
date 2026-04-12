@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
-import refactoring.component as dogdog
-from refactoring.api.full_query import Product
+import component as dogdog
+from api.full_query import Product
 # -------------------------------------------------------------------------------------------------------
 class PetfoodController:
     def __init__(self, page: ft.Page):

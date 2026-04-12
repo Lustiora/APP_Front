@@ -1,5 +1,5 @@
 import flet as ft
-import refactoring.component as dogdog
+import component as dogdog
 
 def about_dog(case=None):
     content = ft.Column(
