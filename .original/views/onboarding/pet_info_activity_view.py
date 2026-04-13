@@ -1,62 +1,85 @@
 import flet as ft
+from components.common.common_components import about_dog
+from components.layout.common_layout import build_screen_body  # 🟩 변경됨
 
-import original.component as dogdog
+
+def invisible_checkbox(text):
+    return ft.Container(
+        width=350,
+        height=50,
+        padding=10,
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.START,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Checkbox(),
+                ft.Text(text, weight=ft.FontWeight.W_500, color=ft.Colors.BLACK),
+            ],
+        ),
+    )
+
+
+def invisible_radio(text, value):
+    return ft.Container(
+        width=350,
+        height=50,
+        padding=10,
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.START,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Radio(value=value),
+                ft.Text(text, weight=ft.FontWeight.W_500, color=ft.Colors.BLACK),
+            ],
+        ),
+    )
+
+
+def radio_time_group():
+    return ft.RadioGroup(
+        content=ft.Column(
+            spacing=0,
+            controls=[
+                invisible_radio("하루 30분", "30min"),
+                invisible_radio("하루 30분 이상", "30min_plus"),
+                invisible_radio("하루 1시간 이상", "1hour_plus"),
+            ],
+        ),
+    )
+
 
 def build_view(page: ft.Page):
-
-    def radio_on_change(e):
-        page.session.store.set("radio_time", e.control.value)
-
-    radio_time = dogdog.radio_group(
-        value="30",
-        on_change=radio_on_change,
-        layout_type="column",
-        spacing=12,
-        contents=[
-            ft.Radio(value="30", label="하루 30분 이상"),
-            ft.Radio(value="60", label="하루 60분 이상"),
-            ft.Radio(value="90", label="하루 90분 이상"),
-        ]
-    )
-    if page.session.store.get("radio_time"):
-        radio_time.value = page.session.store.get("radio_time")
-    else:
-        page.session.store.set("radio_time", "30")
-
-    def breakfast_on_change(e):
-        if e.control.value:
-            page.session.store.set("breakfast", e.control.value)
-        else:
-            page.session.store.remove("breakfast")
-    breakfast = ft.Checkbox(label="아침", on_change=breakfast_on_change)
-    if page.session.store.get("breakfast"):
-        breakfast.value = page.session.store.get("breakfast")
-
-    def lunch_on_change(e):
-        if e.control.value:
-            page.session.store.set("lunch", e.control.value)
-        else:
-            page.session.store.remove("lunch")
-    lunch = ft.Checkbox(label="점심", on_change=lunch_on_change)
-    if page.session.store.get("lunch"):
-        lunch.value = page.session.store.get("lunch")
-
-    def dinner_on_change(e):
-        if e.control.value:
-            page.session.store.set("dinner", e.control.value)
-        else:
-            page.session.store.remove("dinner")
-    dinner = ft.Checkbox(label="저녁", on_change=dinner_on_change)
-    if page.session.store.get("dinner"):
-        dinner.value = page.session.store.get("dinner")
-
     body_controls = [
-        dogdog.basic_text("급여 시간", weight="bold"),
-        breakfast,
-        lunch,
-        dinner,
-        dogdog.basic_text("산책 시간", weight="bold"),
-        radio_time,
+        ft.Container(margin=ft.Margin.only(top=50), content=about_dog()),
+        ft.Text("급여 시간", weight=ft.FontWeight.W_500, color=ft.Colors.BLACK),
+        invisible_checkbox("아침"),
+        invisible_checkbox("점심"),
+        invisible_checkbox("저녁"),
+        ft.Text("산책 시간", weight=ft.FontWeight.W_500, color=ft.Colors.BLACK),
+        radio_time_group(),
     ]
 
-    return dogdog.build_screen_body(body_controls)
+    # ─────────────────────────────────────────────
+    # 🟥 삭제된 개념
+    # 기존:
+    # return build_screen(
+    #     page=page,
+    #     body_controls=body_controls,
+    #     on_back=lambda e: go_back(page),
+    #     on_continue=lambda e: go_next(page),
+    # )
+    #
+    # 👉 상단/하단을 이 파일에서 직접 만들던 구조 제거됨
+    # ─────────────────────────────────────────────
+
+    # ─────────────────────────────────────────────
+    # 🟩 새로 추가된 개념
+    # - 이 파일은 이제 "본문만 반환"
+    # - 상단 화살표 / 하단 버튼은 main.py에서 관리
+    # ─────────────────────────────────────────────
+
+    # ─────────────────────────────────────────────
+    # 🟦 새로 추가된 핵심 로직
+    # - build_screen_body()로 감싸서 main.py body_area에 꽂힘
+    # ─────────────────────────────────────────────
+    return build_screen_body(body_controls)

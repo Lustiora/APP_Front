@@ -1,4 +1,5 @@
 import flet as ft
+import component as dogdog
 
 
 def build_view(page: ft.Page):
@@ -6,7 +7,6 @@ def build_view(page: ft.Page):
         expand=True,
         width=float("inf"),
         bgcolor=ft.Colors.YELLOW,
-        alignment=ft.Alignment(0, 0),
         content=ft.Column(
             expand=True,
             alignment=ft.MainAxisAlignment.CENTER,
@@ -17,12 +17,7 @@ def build_view(page: ft.Page):
                     width=150,
                     height=150,
                 ),
-                ft.Text(
-                    "회원 가입이 완료되었습니다.",
-                    weight=ft.FontWeight.W_800,
-                    color=ft.Colors.BLACK,
-                    size=20,
-                ),
+                dogdog.basic_text(value="회원 가입이 완료되었습니다.", weight="bold", size=20),
             ],
         ),
     )

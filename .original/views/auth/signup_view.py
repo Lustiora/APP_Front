@@ -1,44 +1,62 @@
 import flet as ft
-import original.component as dogdog
+from components.common.common_components import input_box
+from components.layout.common_layout import build_screen_body
 
 
 def build_view(page: ft.Page):
-
-    def email_on_change(e):
-        page.session.store.set("email", e.control.value)
-    def name_on_change(e):
-        page.session.store.set("name", e.control.value)
-    def password_on_change(e):
-        page.session.store.set("password", e.control.value)
-
-    email_input = dogdog.input_textfield(
-        hint_text="example@gmail.com", max_length=None, on_change=email_on_change, input_type="email")
-    name_input = dogdog.input_textfield(
-        hint_text="닉네임", on_change=name_on_change)
-    password_input = dogdog.input_textfield(
-        hint_text="비밀번호", max_length=None, on_change=password_on_change, input_type="password")
-
-    if page.session.store.get("email"):
-        email_input.value = page.session.store.get("email")
-
-    if page.session.store.get("name"):
-        name_input.value = page.session.store.get("name")
-
-    if page.session.store.get("password"):
-        password_input.value = page.session.store.get("password")
-
     body_controls = [
         # ─────────────────────────────────────────────
         # 🟨 기존 주석/구조 유지
         # ─────────────────────────────────────────────
+        ft.Container(
+            margin=ft.Margin.only(top=20),
+            content=ft.Column(
+                spacing=0,
+                controls=[
+                    ft.Text(
+                        "Welcome to 똑똑",
+                        weight=ft.FontWeight.W_500,
+                        color=ft.Colors.BLACK,
+                        size=30,
+                    ),
+
+                    ft.Container(height=12),
+
+                    ft.Text(
+                        "똑똑🚪✊ 우리집 강아지가 마지막 한알을 먹기 전",
+                        weight=ft.FontWeight.W_500,
+                        color=ft.Colors.BLACK,
+                        size=14,
+                    ),
+                    ft.Text(
+                        "문앞에 사료가 도착합니다",
+                        weight=ft.FontWeight.W_500,
+                        color=ft.Colors.BLACK,
+                        size=14,
+                    ),
+
+                    ft.Container(height=46),
+
+                    ft.Text(
+                        "프로필을 완성하세요.",
+                        weight=ft.FontWeight.W_500,
+                        color=ft.Colors.BLACK,
+                        size=28,
+                    ),
+                ],
+            ),
+        ),
+
         ft.Container(height=8),
-        dogdog.basic_text("이메일", weight="bold"),
-        email_input,
-        ft.Container(height=8),
-        dogdog.basic_text("닉네임", weight="bold"),
-        name_input,
-        dogdog.basic_text("비밀번호", weight="bold"),
-        password_input,
+
+        ft.Text("이메일", weight=ft.FontWeight.W_500, color=ft.Colors.BLACK, size=14),
+        input_box(label="example@gmail.com"),
+
+        ft.Text("닉네임", weight=ft.FontWeight.W_500, color=ft.Colors.BLACK, size=14),
+        input_box(label="닉네임"),
+
+        ft.Text("비밀번호", weight=ft.FontWeight.W_500, color=ft.Colors.BLACK, size=14),
+        input_box(label="비밀번호"),
     ]
 
     # ─────────────────────────────────────────────
@@ -47,4 +65,4 @@ def build_view(page: ft.Page):
     # - 상단/하단은 main.py 에서 고정 관리
     # - 이 파일은 본문만 반환
     # ─────────────────────────────────────────────
-    return dogdog.build_screen_body(body_controls)
+    return build_screen_body(body_controls)

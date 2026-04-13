@@ -12,5 +12,5 @@ exclude = [
     ".gitignore",
     "flet_linux_basic.sh",
     "flet_windows_basic.bat",
-    ".original"
+    ".re_original"
 ]

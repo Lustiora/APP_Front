@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
-import views as views
-import component as dogdog
+import domains as domains
+import components as dogdog
 test_page = ""
 # -------------------------------------------------------------------------------------------------------
 # flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a
@@ -51,7 +51,7 @@ class Front_dogdog:
     # View Routing Event
     # ---------------------------------------------------------------------------------------------------  
     def push_view(self, page_name):
-        basic_content, focus_field = views.on_boarding_tile(
+        basic_content, focus_field = domains.on_boarding_tile(
             page=self.page, content_page=page_name, change_page_callback=self.page.go
         )
         async def view_click(e):
