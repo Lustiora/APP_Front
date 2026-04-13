@@ -1,18 +1,15 @@
 import flet as ft
 import components as dogdog
 import pg8000.dbapi as psycopg2
-from dotenv import load_dotenv
-import os
 
 def db_connect():
-    load_dotenv()
     try:
         conn = psycopg2.connect(
-            host=os.getenv(key="DB_HOST"), # type: ignore
-            port=os.getenv(key="DB_PORT"), # type: ignore
-            database=os.getenv(key="DB_NAME"),
-            user=os.getenv(key="DB_USER"),
-            password=os.getenv(key="DB_PASSWORD")
+            host="pg.nas6418.ddns.net", # type: ignore
+            port=9934, # type: ignore
+            database="Dogdog",
+            user="dog_5",
+            password="kosmo"
         )
     except psycopg2.OperationalError as Err:
         conn = None
@@ -39,7 +36,6 @@ def item(list_key, list_value, select_key, select_value):
     )
 
 def update_item_list(list_column, query_search, query_list, select_key, select_value, keyword=""):
-    rows = None
     conn = None
     try:
         conn = db_connect()
@@ -51,20 +47,17 @@ def update_item_list(list_column, query_search, query_list, select_key, select_v
         rows = cursor.fetchall()
         conn.commit() # type: ignore
         cursor.close()
-        try:
-            if rows:
-                list_column.controls.clear()
-                for row in rows:
-                    list_column.controls.append(
-                        item(list_key=row[0], list_value=row[1], 
-                            select_key=select_key, select_value=select_value)
-                    )
-            else:
-                list_column.controls = [
-                    ft.Container(content=dogdog.basic_text(value=f"검색 결과가 없습니다.", size=14))
-                ]
-        except:
-            pass
+        list_column.controls.clear()
+        if rows:
+            for row in rows:
+                list_column.controls.append(
+                    item(list_key=row[0], list_value=row[1],
+                        select_key=select_key, select_value=select_value)
+                )
+        else:
+            list_column.controls = [
+                ft.Container(content=dogdog.basic_text(value=f"검색 결과가 없습니다.", size=14))
+            ]
     except Exception as e:
         if conn:
             conn.rollback() # type: ignore
@@ -88,12 +81,16 @@ def dropdown_list(dropdown_menu, query_list, key):
         rows = cursor.fetchall()
         conn.commit() # type: ignore
         cursor.close()
+        dropdown_menu.options.clear()
         if rows:
-            dropdown_menu.options.clear()
             for row in rows:
                 dropdown_menu.options.append(
                     dogdog.dropdown_menu_option(key=row[0], text=f"{row[1]}g"),
                 )
+        else:
+            dropdown_menu.options.append(
+                dogdog.dropdown_menu_option(text="조회되는 내용이 없습니다."),
+            )
     except:
         if conn:
             conn.rollback() # type: ignore
