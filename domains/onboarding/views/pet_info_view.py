@@ -1,7 +1,6 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
 import components as dogdog
-import pg8000.dbapi as psycopg2
 from api.full_query import Breed
 import datetime
 # -------------------------------------------------------------------------------------------------------
@@ -255,7 +254,7 @@ def pet_info_view(page):
     # Pet Weight Input Field
     # ---------------------------------------------------------------------------------------------------
     def weight_event(e):
-        try: storage.set("pet_weight", float(e.control.value))
+        try: storage.set("pet_weight", e.control.value)
         except: pass
     pet_weight_field = dogdog.input_textfield(
         hint_text="무게를 입력해주세요.", suffix="Kg", input_type="int", on_change=weight_event

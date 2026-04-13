@@ -1,5 +1,6 @@
 from .layout.top_layout import about_dog
 from .layout.bottom_layout import continue_button , arrow_back
+from .layout.loding_popup import Popup
 
 from .common.item_list_column import update_item_list , dropdown_list
 from .common.radio_group import radio_group

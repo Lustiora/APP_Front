@@ -1,0 +1,360 @@
+import flet as ft
+from datetime import datetime
+
+from junhwan.components.common.food_repository import fetch_food_rows
+from junhwan.components.common.texts import Txt
+from junhwan.components.common.colors import (
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
+    TEXT_MUTED,
+    TEXT_TERTIARY,
+    SURFACE_WHITE,
+    BORDER_LIGHT,
+)
+from junhwan.components.common.layout_tokens import SMALL_GAP, SECTION_GAP
+from junhwan.views.home.bottomsheet_props import (
+    sheet_text_field,
+    sheet_datetime_row,
+    register_box,
+    build_sheet,
+    form_bottom_sheet,
+    today_record_box,
+)
+
+
+# ============================================================
+# ✅ 사료 검색 공통 함수
+# - food_search_bottomSheet 내부에서 쓰는 조회 / UI 생성 로직 분리
+# ============================================================
+def food_message_item(message, color):
+    return ft.Container(
+        padding=ft.padding.symmetric(vertical=20),
+        alignment=ft.Alignment(0, 0),
+        content=Txt(
+            message,
+            size=14,
+            color=color,
+            text_align=ft.TextAlign.CENTER,
+            weight=ft.FontWeight.W_500,
+        ),
+    )
+
+
+def food_list_item(food_id, food_name, selected_food_id, on_select):
+    is_selected = selected_food_id == food_id
+
+    return ft.Container(
+        padding=ft.padding.symmetric(horizontal=14, vertical=14),  # 👉 이거 없으면 간격없이 사료가 막나옴
+        border_radius=12,
+        bgcolor=ft.Colors.GREY_100 if is_selected else SURFACE_WHITE,
+        on_click=lambda e, f_id=food_id, f_name=food_name: on_select(f_id, f_name),
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                Txt(
+                    food_name,
+                    size=14,
+                    color=TEXT_PRIMARY,
+                    weight=ft.FontWeight.W_500,
+                ),
+                ft.Icon(
+                    ft.Icons.CHECK,
+                    size=20,
+                    color=TEXT_PRIMARY if is_selected else ft.Colors.TRANSPARENT,
+                ),
+            ],
+        ),
+    )
+
+
+# ============================================================
+# ✅ 개별 바텀시트
+# - 실제로 화면에서 열리는 바텀시트들
+# ============================================================
+def today_record_bottomSheet():
+    # ============================================================
+    # ✅ 오늘 기록 바텀시트
+    # ============================================================
+    def watch_more(e):
+        page = e.page
+        page.pop_dialog()
+        page.open_log_weekly()
+
+    content = ft.Container(
+        padding=16,
+        content=ft.Column(
+            tight=True,
+            spacing=14,
+            controls=[
+                Txt(
+                    f"오늘의 기록: {datetime.now().strftime('%Y.%m.%d')}",
+                    size=20,
+                    weight=ft.FontWeight.W_600,
+                    color=TEXT_PRIMARY,
+                ),
+                today_record_box("물 10ml를 마셨습니다", "오전 07:30"),
+                today_record_box("사료 35g를 먹었습니다", "오전 08:10"),
+                today_record_box("산책 30분 했습니다", "오후 06:20"),
+                ft.Container(
+                    alignment=ft.Alignment(0, 0),
+                    padding=ft.padding.only(top=6, bottom=4),
+                    content=Txt(
+                        "더보기",
+                        size=14,
+                        color=TEXT_MUTED,
+                        weight=ft.FontWeight.W_500,
+                    ),
+                    on_click=watch_more,
+                ),
+            ],
+        ),
+    )
+
+    return build_sheet(content=content, bgcolor=SURFACE_WHITE, padding=0)
+
+
+def feeding_bottomSheet():
+    # ============================================================
+    # ✅ 밥주기 눌렀을때 사료가 있으면 나오는 바텀시트 (현재는 안나옴)
+    # ============================================================
+    bowl_guide = ft.Container(
+        alignment=ft.Alignment(0, 0),
+        content=ft.Stack(
+            controls=[
+                ft.Container(
+                    alignment=ft.Alignment(0, 0),
+                    content=ft.Image(
+                        src="밥그릇.png",
+                        width=200,
+                        height=130,
+                    ),
+                ),
+                ft.Container(
+                    padding=ft.padding.only(top=45),
+                    alignment=ft.Alignment(0, 0),
+                    content=Txt(
+                        "40g",
+                        size=40,
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                ),
+            ]
+        ),
+    )
+
+    return form_bottom_sheet(
+        title="밥주기",
+        image_src="dogbowl.png",
+        subtitle="오늘 츄츄에게 딱 알맞은 1회 급여량은..",
+        top_content=bowl_guide,
+        fields=[
+            sheet_text_field(
+                value="가장 맛있는 시간 30일, 어덜트 치킨",
+                read_only=True,
+            ),
+            sheet_text_field(value="40g"),
+            sheet_text_field(hint_text="메모 (선택)"),
+            sheet_datetime_row("2026.03.19", "오전 08:00"),
+        ],
+    )
+
+
+def water_bottomSheet():
+    # ============================================================
+    # ✅ 물주기 바텀시트
+    # ============================================================
+    water_guide = ft.Container(
+        alignment=ft.Alignment(0, 0),
+        content=ft.Stack(controls=[]),
+    )
+
+    return form_bottom_sheet(
+        title="물주기",
+        image_src="waterdrop.png",
+        top_content=water_guide,
+        fields=[
+            sheet_text_field(hint_text="물 섭취량(ml)"),
+            sheet_text_field(hint_text="메모 (선택)"),
+            sheet_datetime_row("2026.03.19", "오전 08:00"),
+        ],
+    )
+
+
+def select_feeding_bottomSheet():
+    # ============================================================
+    # ✅ 밥주기 선택 바텀시트
+    # - 등록된 사료가 없을 때 food-select 화면으로 이동
+    # ============================================================
+    def handle_open_food_select(e):
+        page = e.page
+        page.pop_dialog()
+        page.open_food_select()
+
+    return form_bottom_sheet(
+        title="밥주기",
+        image_src="dogbowl.png",
+        subtitle="사료 선택",
+        fields=[
+            register_box("등록된 항목이 없어요", handle_open_food_select),
+            sheet_text_field(hint_text="급여량(g)"),
+            sheet_text_field(hint_text="메모 (선택)"),
+            sheet_datetime_row("2026.04.07", "오전 08:00"),
+        ],
+    )
+
+
+# ============================================================
+# ✅ 검색형 바텀시트
+# - 검색 / DB 조회 / 선택 상태 담당
+# ============================================================
+def food_search_bottomSheet(
+    page: ft.Page,
+    on_food_selected=None,
+    initial_selected_food_id=None,
+    initial_selected_food_name=None,
+):
+    # ============================================================
+    # ✅ 사료 검색 바텀시트
+    # - 검색 / DB 조회 / 선택 상태 담당
+    # ============================================================
+    bs = None
+
+    selected_food_id = (
+        initial_selected_food_id
+        if initial_selected_food_id is not None
+        else page.session.store.get("selected_food_id")
+    )
+    selected_food_name = (
+        initial_selected_food_name
+        if initial_selected_food_name is not None
+        else page.session.store.get("selected_food_name")
+    )
+
+    food_list_column = ft.Column(
+        spacing=SMALL_GAP,
+        scroll=ft.ScrollMode.AUTO,
+        height=320,
+    )
+
+    food_search_field = ft.TextField(
+        hint_text="Search",
+        border_radius=12,
+        border_color=BORDER_LIGHT,
+        focused_border_color=BORDER_LIGHT,
+        content_padding=ft.padding.symmetric(horizontal=12, vertical=14),
+        text_style=ft.TextStyle(size=14, color=TEXT_PRIMARY),
+        hint_style=ft.TextStyle(size=14, color=TEXT_MUTED),
+    )
+
+    # ============================================================
+    # ✅ 상태 변경 함수
+    # ============================================================
+    def refresh_food_list(keyword=""):
+        food_rows, error_message = fetch_food_rows(keyword)
+
+        if food_rows is None:
+            food_list_column.controls = [
+                food_message_item(
+                    error_message if error_message else "DB 연결 오류가 발생했습니다.",
+                    ft.Colors.RED,
+                )
+            ]
+        elif food_rows:  # 👉 이거 없으면 사료 안나오고 검색 결과 없습니다 나옴.
+            food_list_column.controls = [
+                food_list_item(row[0], row[1], selected_food_id, select_food)
+                for row in food_rows
+            ]
+        else:
+            food_list_column.controls = [
+                food_message_item("검색 결과가 없습니다.", TEXT_SECONDARY)
+            ]
+
+        page.update()
+
+    def select_food(food_id, food_name):
+        nonlocal selected_food_id, selected_food_name
+
+        selected_food_id = food_id
+        selected_food_name = food_name
+
+        page.session.store.set("selected_food_id", food_id)
+        page.session.store.set("selected_food_name", food_name)
+
+        refresh_food_list(food_search_field.value or "")  # 👈 이게 없으면 사료 선택해도 회색 띠랑 체크 표시 안보임
+
+        if on_food_selected:
+            on_food_selected(food_id, food_name)
+
+    # ============================================================
+    # ✅ 이벤트 함수
+    # ============================================================
+    def on_food_search_change(e):
+        refresh_food_list(e.control.value)
+
+    def close_food_search_bs(e=None):
+        if bs:
+            bs.open = False
+            page.update()
+
+    food_search_field.on_change = on_food_search_change
+
+    bs = ft.BottomSheet(
+        open=True,
+        scrollable=True,
+        barrier_color=ft.Colors.TRANSPARENT,
+        bgcolor=ft.Colors.TRANSPARENT,
+        content=ft.Container(
+            height=400,
+            padding=20,
+            bgcolor=SURFACE_WHITE,
+            border_radius=ft.border_radius.only(
+                top_left=24,
+                top_right=24,
+            ),
+            shadow=ft.BoxShadow(
+                spread_radius=0,
+                blur_radius=10,
+                color=ft.Colors.with_opacity(0.08, ft.Colors.BLACK),
+                offset=ft.Offset(0, -2),
+            ),
+            content=ft.Column(
+                tight=True,
+                spacing=SECTION_GAP,
+                controls=[
+                    ft.Container(
+                        width=38,
+                        height=5,
+                        border_radius=10,
+                        bgcolor=ft.Colors.GREY_400,
+                    ),
+                    ft.Container(height=4),
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        controls=[
+                            Txt(
+                                "사료 검색",
+                                size=23,
+                                weight=ft.FontWeight.BOLD,
+                                color=TEXT_PRIMARY,
+                            ),
+                            ft.IconButton(
+                                icon=ft.Icons.CLOSE,
+                                icon_size=22,
+                                icon_color=TEXT_TERTIARY,
+                                on_click=close_food_search_bs,
+                                style=ft.ButtonStyle(padding=0),
+                            ),
+                        ],
+                    ),
+                    food_search_field,
+                    ft.Container(height=SMALL_GAP),
+                    food_list_column,
+                ],
+            ),
+        ),
+    )
+
+    refresh_food_list()
+    return bs
