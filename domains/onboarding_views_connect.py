@@ -42,7 +42,7 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
                 })
                 await focus_field.focus()
                 page.update()
-                change_page_callback("/pet_info") # type: ignore
+                change_page_callback("/sign_up_success") # type: ignore
             else:
                 show_error(text="이메일, 닉네임, 비밀번호를 모두 입력해주세요.")
                 return
@@ -203,19 +203,6 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
                     alignment=ft.MainAxisAlignment.CENTER,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     controls=domains.signup_success_view(page=page)
-        )])
-        focus_field = None
-        return basic_content, focus_field
-    # ---------------------------------------------------------------------------------------------------
-    elif content_page == "/home":
-        basic_content = ft.Row(
-            expand=True,
-            controls=[
-                ft.Column(
-                    expand=True,
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=domains.home(page=page)
         )])
         focus_field = None
         return basic_content, focus_field

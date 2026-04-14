@@ -23,16 +23,7 @@ def home_tile(page: ft.Page, content_page:str, change_page_callback=None):
     # On Boarding Tile Link
     # ---------------------------------------------------------------------------------------------------
     if content_page == "/home":
-        basic_content = ft.Row(
-            expand=True,
-            controls=[
-                ft.Column(
-                    expand=True,
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=domains.home(page=page)
-        )])
-        return basic_content, focus_field
+        content = domains.home(page=page)
     # ---------------------------------------------------------------------------------------------------
     # On Boarding Content and Dummy Focus Field Change
     # ---------------------------------------------------------------------------------------------------
