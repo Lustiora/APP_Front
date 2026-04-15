@@ -24,7 +24,7 @@ def onboarding_top_bar(case=None):
 
     return ft.Container(height=120, padding=ft.Padding.only(top=40), content=content)
 
-def home_top_bar(page, pet_list:dict):
+def home_top_bar(page, pet_list:dict, pet_profile_image="dogclay.png"):
     first_pet_id = next(iter(pet_list.keys()))
     first_pet_birth_day = pet_list.get(first_pet_id).get("birth_day") # type: ignore
     first_pet_birth_sex = pet_list.get(first_pet_id).get("sex") # type: ignore
@@ -73,9 +73,9 @@ def home_top_bar(page, pet_list:dict):
     )
     
     header_controls = [
-        ft.Container(content=ft.Row(spacing=10, vertical_alignment=ft.CrossAxisAlignment.END ,controls=[
-            ft.Image(src="dogclay.png", height=80),
-            ft.Container(padding=0, alignment=ft.Alignment.CENTER, height=80, content=pet_dropdown_list)])),
+        ft.Container(content=ft.Row(spacing=10, controls=[
+            ft.Image(src=pet_profile_image, height=80),
+            ft.Container(padding=0, width=120, height=80, content=pet_dropdown_list)])),
         ft.IconButton(icon=ft.Icons.NOTIFICATIONS_NONE, icon_color=ft.Colors.OUTLINE, icon_size=30)
     ]
 
