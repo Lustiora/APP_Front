@@ -17,7 +17,7 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
     storage = page.session.store.get
     def show_error(text:str):
         page.show_dialog(ft.SnackBar(content=ft.Text(value=text), open=True))
-    top = ft.Row(controls=[dogdog.about_dog()])
+    top = ft.Row(controls=[dogdog.onboarding_top_bar()])
     focus_field = ft.TextField(
             border_color=ft.Colors.TRANSPARENT, height=0, opacity=0,
             focus_color=ft.Colors.TRANSPARENT, read_only=True
@@ -46,7 +46,7 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
             else:
                 show_error(text="이메일, 닉네임, 비밀번호를 모두 입력해주세요.")
                 return
-        top = ft.Row(controls=[dogdog.about_dog(case=1)])
+        top = ft.Row(controls=[dogdog.onboarding_top_bar(case=1)])
         content = domains.sign_up_view(page=page)
         bottom = ft.Row(controls=[
             dogdog.continue_button(on_click=sign_up_next) 

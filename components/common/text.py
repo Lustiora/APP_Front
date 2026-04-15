@@ -1,5 +1,14 @@
 import flet as ft
 
-def basic_text(value, size=None, weight=None, color=None):
+def basic_text(value:str=None, spans=None, size=None, weight=None, color=ft.Colors.BLACK):
     if weight == "bold": weight = ft.FontWeight.BOLD
-    return ft.Text(value=value, size=size, weight=weight, color=color, font_family="Pretendard")
+    return ft.Text(
+        spans=spans,
+        value=value,
+        size=size, 
+        weight=weight, 
+        color=color, 
+        font_family="Pretendard",
+        overflow=ft.TextOverflow.ELLIPSIS,
+        max_lines=1
+    )
