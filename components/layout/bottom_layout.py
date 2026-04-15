@@ -26,3 +26,14 @@ def arrow_back(on_click=None):
             size=22,
         ),
     )
+
+def bottom_appbar(appbar_button_list:list):
+    return ft.BottomAppBar(
+        padding=0,
+        margin=ft.margin.only(top=-5),
+        bgcolor="#FFFFFF",
+        content=ft.Column(
+            controls=[
+                ft.Divider(height=1),
+                ft.Row(controls=appbar_button_list)
+    ]))
