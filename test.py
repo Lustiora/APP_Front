@@ -2,7 +2,7 @@
 import flet as ft
 import domains as domains
 import components as dogdog
-import datetime
+import os
 # -------------------------------------------------------------------------------------------------------
 def main(page: ft.Page):
     page.title = "Dog Dog"
@@ -21,126 +21,56 @@ def main(page: ft.Page):
             on_surface_variant=ft.Colors.BLACK,
     ))
 
-    menu_style = ft.ButtonStyle(
-        bgcolor="#FBEEAC", padding=ft.Padding.only(left=35), text_style=ft.TextStyle(size=14, weight=ft.FontWeight("w600"))
+    home_background = ft.Container(
+        bgcolor="#FEF3B9", height=150, border_radius=ft.BorderRadius.only(bottom_left=30, bottom_right=30),
     )
 
-    pet_list = ft.Dropdown(
-        height=50,
-        text_style=ft.TextStyle(weight=ft.FontWeight("bold")),
-        text_align=ft.TextAlign.END,
-        trailing_icon=ft.Icons.KEYBOARD_ARROW_DOWN,
-        selected_trailing_icon=ft.Icons.KEYBOARD_ARROW_UP,
-        value="1",
-        menu_style=ft.MenuStyle(bgcolor="#DBD19F", padding=0),
-        border_width=0,
-        width=105,
-        options=[
-            ft.DropdownOption(key="1", text="츄츄", style=menu_style),
-            ft.DropdownOption(key="2", text="토끼", style=menu_style),                                
-        ]
-    )
+    now_history = dogdog.content_container(content_list=domains.now_history(page=page))
+    feeding_food_count = dogdog.content_container(content_list=domains.feeding_food_count(page=page))
+    
+    def update_scale(e):
+        base_height = 800.0
+        body_scale = 0.87
+        body_margin = -100
+        if page.height < base_height: # type: ignore
+            current_height = page.height if page.height > 0 else base_height # type: ignore
+            scale_val = current_height / base_height # type: ignore
+            body_column.scale = scale_val * body_scale if scale_val < 1.0 else body_scale
+            body_column.margin = ft.margin.only(top=body_margin * scale_val if scale_val < 1.0 else body_margin)
+            top_banner.padding = ft.padding.only(top=40 * scale_val if scale_val < 1.0 else 40)
+            home_background.height = 160 * scale_val if scale_val < 1.0 else 160
+            if e is not None: page.update()
 
-    background = ft.Container(
-        bgcolor="#FEF3B9", height=180, border_radius=ft.BorderRadius.only(bottom_left=30, bottom_right=30),
-    )
+    page.on_resize = update_scale
+    
+    body_column = ft.Column(spacing=15, expand=True)
 
-    now_history = ft.Container(
-        width=360,
-        padding=20,
-        border_radius=ft.border_radius.all(10),
-        border=ft.Border.all(width=2, color=ft.Colors.GREY_200),
-        shadow=ft.BoxShadow(
-            blur_radius=2, color=ft.Colors.GREY_100,
-            offset=ft.Offset(x=0, y=3)),
-        bgcolor="#ffffff",
+    pet_list = {
+        # pet_id : {nickname, birth_day, sex},
+        1:{"nickname":"바둑이테", "birth_day":"2023-01-01", "sex":"1"},
+        2:{"nickname":"누렁", "birth_day":"2022-01-01", "sex":"2"},
+    }
+
+    top_banner = dogdog.home_top_bar(page=page, pet_list=pet_list)
+    
+    update_scale(e=None)
+
+    main_container = ft.Container(expand=True, padding=ft.Padding.only(left=10, right=10), 
         content=ft.Column(
-            spacing=20,
+            expand=True,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
-                ft.Row([
-                        dogdog.basic_text(value="오늘의 기록", size=18, weight="bold"),
-                        dogdog.basic_text(value=datetime.datetime.now().strftime("%Y.%m.%d"), size=14, weight="bold", color=ft.Colors.GREY_700),
-                ]),
-                ft.Row(
-                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                    controls=[
-                        ft.TextButton(content=dogdog.basic_text("급여량: 100g", size=12), style=ft.ButtonStyle(bgcolor="#EEEEEE"), width=100),
-                        ft.TextButton(content=dogdog.basic_text("음수량: 100ml", size=12), style=ft.ButtonStyle(bgcolor="#EEEEEE"), width=100),
-                        ft.TextButton(content=dogdog.basic_text("산책: 60분", size=12), style=ft.ButtonStyle(bgcolor="#EEEEEE"), width=100),
-                ]),
-                ft.Column(
-                    controls=[
-                        dogdog.basic_text(value="목표 활동량", size=14, color=ft.Colors.GREY_700, weight="bold"),
-                        ft.ProgressBar(
-                            height=10,
-                            value=0 / 90 if 90 else 0,
-                            bgcolor=ft.Colors.GREY_300,
-                            color=ft.Colors.YELLOW_600,
-                            border_radius=10,
-                        ),
-                        dogdog.basic_text(
-                            value=f"{0}/{90}{"분"}",
-                            size=13,
-                            color=ft.Colors.GREY_500,
-                            weight="bold",
-                        ),
-                    ],
-                ),
-                ft.Column(
-                    controls=[
-                        dogdog.basic_text(value="목표 칼로리", size=14, color=ft.Colors.GREY_700, weight="bold"),
-                        ft.ProgressBar(
-                            height=10,
-                            value=0 / 310 if 310 else 0,
-                            bgcolor=ft.Colors.GREY_300,
-                            color=ft.Colors.YELLOW_600,
-                            border_radius=10,
-                        ),
-                        dogdog.basic_text(
-                            value=f"{0}/{310}{"kcal"}",
-                            size=13,
-                            color=ft.Colors.GREY_500,
-                            weight="bold",
-                        ),
-                    ],
-                ),
-            ]
-        )
-    )
-    header_controls = [
-        ft.Container(content=ft.Row(spacing=10, controls=[
-            ft.Image(src="dogclay.png", width=80),
-            ft.Column(spacing=0, controls=[
-                ft.Row(controls=[pet_list], margin=ft.margin.only(left=-14, bottom=-10)),
-                dogdog.basic_text("(4년 9개월,♀️)", weight="bold", color=ft.Colors.OUTLINE)
-        ])])),
-        ft.IconButton(icon=ft.Icons.NOTIFICATIONS_NONE, icon_color=ft.Colors.OUTLINE, icon_size=30)
-    ]
-
-    header_container = ft.Container(
-        padding=ft.Padding.only(top=60, left=20, right=20),
-        content=ft.Row(
-            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-            vertical_alignment=ft.CrossAxisAlignment.START,
-            controls=header_controls
-    ))
-
-    body_column = ft.Column(spacing=20, scroll=ft.ScrollMode.HIDDEN, expand=True)
-        
-    main_container = ft.Container(expand=True, content=ft.Column(
-        expand=True,
-        alignment=ft.MainAxisAlignment.CENTER,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        controls=[
-            header_container,
-            body_column
+                top_banner,
+                body_column
     ]))
 
     body_column.controls.append(now_history)
-    body_column.controls.append(now_history)
-    body_column.controls.append(now_history)
+    body_column.controls.append(feeding_food_count)
+    body_column.controls.append(domains.fast_menu_grid(page=page))
 
-    root_stack = ft.Stack(controls=[background, main_container], expand=True)
+
+    root_stack = ft.Stack(controls=[home_background, main_container], expand=True)
 
     new_view = ft.View(padding=0, spacing=0, bgcolor="#FFFFFF", controls=[root_stack])
 
@@ -148,7 +78,6 @@ def main(page: ft.Page):
         return ft.Container(
             expand=True,
             height=74,
-            alignment=ft.Alignment(0, 0),
             on_click=on_click,
             content=ft.Column(
                 alignment=ft.MainAxisAlignment.CENTER,
@@ -209,27 +138,15 @@ def main(page: ft.Page):
     
     new_view.bottom_appbar = ft.BottomAppBar(
         bgcolor="#FFFFFF",
-        elevation=0,
         padding=0,
         content=ft.Container(
             bgcolor="#FFFFFF",
-            height=82,
-            padding=ft.padding.only(left=10, right=10, top=0, bottom=2),
             content=ft.Column(
                 spacing=0,
                 controls=[
-                    # 상단 회색 선 전체 표시
-                    ft.Container(
-                        height=1,
-                        bgcolor=ft.Colors.GREY_300,
-                    ),
-                    ft.Container(
-                        expand=True,
-                        content=ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                            controls=bottom_nav_items(None,None),
-                        ),
+                    ft.Divider(height=1),
+                    ft.Row(
+                        controls=bottom_nav_items(None,None),
                     ),
                 ],
             ),
