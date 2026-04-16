@@ -12,3 +12,4 @@ from .onboarding.views.pet_food_view import pet_food_view
 
 from .home_views_connect import home_tile
 from .home.views.home import now_history , feeding_food_count , fast_menu_grid
+from .home.views.feeding import feeding_tabs_view
