@@ -25,7 +25,7 @@ fi
 
 export FLET_NO_BROWSER=1
 
-watchfiles "python test.py"
+watchfiles "python main.py"
 
 echo ""
 read -p "Press Enter to exit..."

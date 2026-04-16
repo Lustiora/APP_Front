@@ -2,6 +2,7 @@
 import flet as ft
 import domains as domains
 import components as dogdog
+import api.full_query as full_query
 # -------------------------------------------------------------------------------------------------------
 def main(page: ft.Page):
     # ---------------------------------------------------------------------------------------------------
@@ -22,48 +23,13 @@ def main(page: ft.Page):
             on_surface=ft.Colors.BLACK,
             on_surface_variant=ft.Colors.BLACK,
     ))
-    # ---------------------------------------------------------------------------------------------------
-    # Customer Data
-    # ---------------------------------------------------------------------------------------------------
-    pet_list = {
-        # pet_id : {nickname, birth_day, sex},
-        1:{"nickname":"바둑이테", "birth_day":"2023-01-01", "sex":"1"},
-        2:{"nickname":"누렁", "birth_day":"2022-01-01", "sex":"2"},
-    }
 
-    customer_food_detail = {
-        # customer_food_id : product_detail
-        4: {"thumbnail": "test_product_4.jpg",                  # 상품 이미지
-            "total_weight": 5800,                               # 상품 총 무게 g
-            "brand": "더리얼 독",                                 # 브랜드
-            "product_name": "그레인프리 오븐베이크드 닭고기 시니어",  # 상품명
-            "left_food_count": 24,                              # 남은 급여 횟수(현재 날짜로 환산 / 1회 : 1일)
-            "left_intake": 800},                                # 남은 사료 무게 g
-        14: {"thumbnail": "test_product_14.jpg",
-            "total_weight": 1600,
-            "brand": "더리얼 독",
-            "product_name": "그레인프리 오븐베이크드 돼지 어덜트",
-            "left_food_count": 12,
-            "left_intake": 600},
-        44: {"thumbnail": "test_product_44.jpg",
-            "total_weight": 1600,
-            "brand": "더리얼 독",
-            "product_name": "그레인프리 크런치 소고기 시니어",
-            "left_food_count": 17,
-            "left_intake": 160},
-        70: {"thumbnail": "test_product_70.jpg",
-            "total_weight": 50,
-            "brand": "더리얼 독",
-            "product_name": "로우 돼지고기 어덜트",
-            "left_food_count": 1,
-            "left_intake": 25},
-    }
     # ---------------------------------------------------------------------------------------------------
     # Page Top Banner
     # ---------------------------------------------------------------------------------------------------
-    # home_background , top_banner , body_column = dogdog.main_top_bar(
-    #     page=page, pet_list=pet_list, view="home") # + pet_profile_image
-    home_background , top_banner = dogdog.main_top_bar(page=page, view="feeding")  # type: ignore
+    # home_background , top_banner , body_column = dogdog.home_layout( # type: ignore
+    #     page=page, pet_list=full_query.Home.pet_list, view="home")
+    home_background , top_banner = dogdog.home_layout(page=page, view="feeding")  # type: ignore
     # ---------------------------------------------------------------------------------------------------
     # Page Body
     # ---------------------------------------------------------------------------------------------------
@@ -78,7 +44,7 @@ def main(page: ft.Page):
     # ---------------------------------------------------------------------------------------------------
     # Page Body List (Exception Home)
     # ---------------------------------------------------------------------------------------------------
-    main_container_content.append(domains.feeding_tabs_view(page=page, customer_food_detail=customer_food_detail))
+    main_container_content.append(domains.feeding_tabs_view(page=page, customer_food_detail=full_query.Home.customer_food_detail))
     # ---------------------------------------------------------------------------------------------------
     # main_container_content.append(body_column)
     # ---------------------------------------------------------------------------------------------------
@@ -103,9 +69,8 @@ def main(page: ft.Page):
     # ---------------------------------------------------------------------------------------------------
     # Page View
     # ---------------------------------------------------------------------------------------------------
-    new_view = ft.View(
-        padding=0, spacing=0, bgcolor="#FFFFFF", controls=[
-            ft.Stack(controls=[home_background, main_container], expand=True)])
+    layout = ft.Stack(expand=True, controls=[home_background, main_container])
+    new_view = ft.View(padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout])
     # ---------------------------------------------------------------------------------------------------
     # Bottom Appbar
     # ---------------------------------------------------------------------------------------------------
@@ -117,12 +82,7 @@ def main(page: ft.Page):
         (ft.Icons.MESSENGER_OUTLINE_ROUNDED, "Contents", lambda _:print("Contents")),
         (ft.Icons.PERSON_OUTLINE, "MyPage", lambda _:print("MyPage")),
     ]
-    appbar_button_list = [dogdog.appbar_button(
-        icon=icon, text=text, on_click=on_click) for icon, text, on_click in appbar_status]
-    new_view.bottom_appbar = dogdog.bottom_appbar(appbar_button_list=appbar_button_list)
-    new_view.floating_action_button = dogdog.appbar_floating_button(
-        icon="skeleton.png", on_click=lambda _: print("shop"))
-    new_view.floating_action_button_location = (ft.FloatingActionButtonLocation.CENTER_DOCKED)
+    dogdog.home_bottom_appbar(new_view, appbar_status)
     # ---------------------------------------------------------------------------------------------------
     page.views.append(new_view)
     page.update()

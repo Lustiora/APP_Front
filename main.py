@@ -2,6 +2,7 @@
 import flet as ft
 import domains
 import time
+import components as dogdog
 test_page = ""
 # -------------------------------------------------------------------------------------------------------
 # flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a
@@ -33,10 +34,12 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        if self.is_onboarding_complete == False:
-            page.go("/sign_up")
+        target_route = "/home" if self.is_onboarding_complete else "/sign_up"
+        
+        if self.page.route == target_route:
+            self.routing_view(page_name=target_route)
         else:
-            page.go("/home")
+            page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
     # Route Change & Android OnBackPressedCallback Event
     # ---------------------------------------------------------------------------------------------------
@@ -68,28 +71,25 @@ class Front_dogdog:
                 expand=True, controls=basic_content # type: ignore
             )
             layout = ft.Container(expand=True, padding=20, on_click=view_click, content=main_column)
+            new_view = ft.View(
+                route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
+            )
         else:
-            basic_content, focus_field = domains.home_tile(
+            home_background , main_container_content , appbar_status = domains.home_tile(
                 page=self.page, content_page=page_name, change_page_callback=self.page.go
             )
-            async def view_click(e):
-                if focus_field:
-                    await focus_field.focus()
-                    self.page.update()
-            main_column = ft.Column(
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
-                expand=True, controls=basic_content # type: ignore
+            main_container = ft.Container(expand=True, padding=ft.Padding.only(left=10, right=10), 
+            content=ft.Column(
+                expand=True,
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                controls=main_container_content))
+            layout = ft.Stack(expand=True, controls=[home_background, main_container])
+            new_view = ft.View(
+                route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
             )
-            content = ft.Container(expand=True, padding=20, on_click=view_click, content=main_column)
-            background = ft.Container(
-                bgcolor="#FEF3B9",
-                height=200,
-                border_radius=ft.BorderRadius.only(bottom_left=50, bottom_right=50),
-            )
-            layout = ft.Stack(expand=True, controls=[background, content])
-        new_view = ft.View(
-            route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
-        )
+            dogdog.home_bottom_appbar(new_view, appbar_status, self.page.go)
+            
         self.page.views.append(new_view)
         if page_name == "/sign_up_success":
             new_view.bgcolor = ft.Colors.YELLOW
