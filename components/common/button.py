@@ -2,17 +2,17 @@ import flet as ft
 import components as dogdog
 # -------------------------------------------------------------------------------------------------------
 
-def flat_button(text, scale=0.8, size=None, expand=None, on_click=None):
+def flat_button(text, scale=0.8, icon=None, size=None, expand=None, on_click=None, disabled=True):
     return ft.Button(
-        disabled=True,
+        icon=icon,
         width=size,
         height=size,
         scale=scale,
-        color="#FFFFFF",
         bgcolor=ft.Colors.GREY_100,
-        content=dogdog.basic_text(value=text),
+        content=dogdog.basic_text(value=text, color=ft.Colors.GREY_600),
         expand=expand,
         on_click=on_click,
+        disabled=disabled,
         style=ft.ButtonStyle(
             bgcolor=ft.Colors.GREY_300,
             shape=ft.RoundedRectangleBorder(radius=5), 
@@ -23,7 +23,7 @@ def flat_button(text, scale=0.8, size=None, expand=None, on_click=None):
 def icon_flat_button(text, icon, on_click=None):
     return ft.Container(
         expand=True,
-        height=85,
+        height=90,
         on_click=lambda _:print(text) if on_click is None else on_click(),
         ink=True,
         border_radius=ft.border_radius.all(10),
@@ -46,7 +46,9 @@ def appbar_button(icon, text, on_click):
     if icon is None and text is None:
         return ft.Container(expand=True)
     return ft.Container(
+        padding=0,
         expand=True,
+        ink=True,
         on_click=on_click,
         content=ft.Column(
             expand=True,
@@ -55,7 +57,7 @@ def appbar_button(icon, text, on_click):
             spacing=3,
             controls=[
                 ft.Icon(icon=icon, color=ft.Colors.GREY_400, size=22),
-                dogdog.basic_text(value=text, size=10, weight="bold"),
+                dogdog.basic_text(value=text, size=12, color=ft.Colors.GREY_400),
             ],
         ),
     )
@@ -78,4 +80,14 @@ def appbar_floating_button(icon, on_click):
         hover_color=ft.Colors.TRANSPARENT,
         focus_color=ft.Colors.TRANSPARENT,
         on_click=on_click,
+    )
+
+def tap_button(index, value, on_click=None):
+    return ft.Container(
+        padding=ft.Padding.only(left=20, right=20, top=10, bottom=10),
+        expand=True,
+        border_radius=ft.border_radius.all(10),
+        ink=True,
+        on_click=on_click,
+        content=dogdog.basic_text(value=value, size=16, weight="bold", color=ft.Colors.GREY_500)
     )

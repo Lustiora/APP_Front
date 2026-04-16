@@ -6,10 +6,10 @@ set PYTHONPATH=%~dp0
 
 echo ---------------------------------------------------
 echo 🚀 Flet Hot Reload
-echo [Web Mode] http://localhost:34636
+echo [Web Mode] http://localhost:34637
 echo ---------------------------------------------------
 
-start http://localhost:34636
+start http://localhost:34637
 set FLET_NO_BROWSER=1
 
 ".venv\Scripts\python.exe" -m watchfiles ".venv\Scripts\python.exe junhwan\main.py" junhwan

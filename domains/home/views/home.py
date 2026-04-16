@@ -83,8 +83,8 @@ def feeding_food_count(page: ft.Page):
                 dogdog.basic_text(spans=[
                     ft.TextSpan("800g", style=dogdog.TextStyle(size=16)),
                     ft.TextSpan(" / 2Kg")
-                ], color=ft.Colors.GREY_700, weight="bold", size=16),
-                dogdog.flat_button("24 일치 남음"),
+                ], color=ft.Colors.GREY_400, weight="bold", size=16),
+                dogdog.flat_button("24 일치 남음", scale=0.7),
             ],
         ),
         ft.ProgressBar(
@@ -97,7 +97,7 @@ def feeding_food_count(page: ft.Page):
         dogdog.basic_text(spans=[
             ft.TextSpan("예상 소진일 "),
             ft.TextSpan(last_feeding_food_count)
-        ], size=12, color=ft.Colors.GREY_600, weight="bold"),
+        ], size=12, color=ft.Colors.GREY_600),
     ]
 
     return content_column

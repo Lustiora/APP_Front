@@ -30,10 +30,12 @@ def arrow_back(on_click=None):
 def bottom_appbar(appbar_button_list:list):
     return ft.BottomAppBar(
         padding=0,
-        margin=ft.margin.only(top=-5),
+        height=80,
         bgcolor="#FFFFFF",
         content=ft.Column(
+            expand=True,
+            spacing=0,
             controls=[
                 ft.Divider(height=1),
-                ft.Row(controls=appbar_button_list)
+                ft.Row(controls=appbar_button_list, expand=True, spacing=0)
     ]))

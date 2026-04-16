@@ -345,6 +345,6 @@ if test_page == "Browser":
         import webbrowser, os
         if os.getenv(key="FLET_NO_BROWSER"):
             webbrowser.open = lambda *args: None
-        ft.run(main=main, assets_dir="assets", view=ft.AppView.WEB_BROWSER, port=34636)
+        ft.run(main=main, assets_dir="assets", view=ft.AppView.WEB_BROWSER, port=34637)
 else:
     if __name__ == "__main__": ft.run(main=main, assets_dir="assets")
