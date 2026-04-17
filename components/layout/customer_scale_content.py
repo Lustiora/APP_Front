@@ -2,16 +2,17 @@ import flet as ft
 import components as dogdog
 import datetime
 
-def home_layout(page, view=None, pet_list:dict=None): # type: ignore
+def home_layout(page, view=None, text=None, pet_list:dict=None): # type: ignore
+    def handle_back(e=None):
+        if len(page.views) > 1:
+            page.views.pop()
+            page.go(page.views[-1].route)
     # ---------------------------------------------------------------------------------------------------    
     # Page Background
     # ---------------------------------------------------------------------------------------------------
     background_height = 100
     home_background = ft.Container(
         bgcolor="#FEF3B9", height=background_height, border_radius=ft.BorderRadius.only(bottom_left=30, bottom_right=30),
-    )
-    case = dogdog.flat_button(
-        text="사료 등록", icon=ft.Icons.EDIT, on_click=lambda _: print("사료 등록"), disabled=False
     )
     
     center_header = ft.Container()
@@ -100,13 +101,13 @@ def home_layout(page, view=None, pet_list:dict=None): # type: ignore
                 ft.Container(padding=0, width=120, height=70, content=pet_dropdown_list)]
         )
     
-    elif view == "feeding":
+    else:
         top_padding = 40
         header_container_padding = 50
         left_header = ft.IconButton(
-            icon=ft.Icons.ARROW_BACK_IOS_NEW, icon_color=ft.Colors.GREY_500, icon_size=26, on_click=lambda _: page.go("/home")
+            icon=ft.Icons.ARROW_BACK_IOS_NEW, icon_color=ft.Colors.GREY_500, icon_size=26, on_click=handle_back
         )
-        center_header = dogdog.basic_text(value="급여 중인 제품", weight="bold", size=16)
+        center_header = dogdog.basic_text(value=text, weight="bold", size=16) # type: ignore
 
     top_banner = ft.Container(
         padding=ft.Padding.only(top=header_container_padding),
