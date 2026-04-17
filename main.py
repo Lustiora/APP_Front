@@ -27,6 +27,7 @@ class Front_dogdog:
                 on_surface=ft.Colors.BLACK,
                 on_surface_variant=ft.Colors.BLACK,
         ))
+
         page.on_route_change = self.on_route_change
         page.on_view_pop = self.handle_back
         self.is_onboarding_complete = True
@@ -58,6 +59,15 @@ class Front_dogdog:
     # View Routing Event
     # ---------------------------------------------------------------------------------------------------  
     def routing_view(self, page_name):
+        appbar_status = [
+            # Icon , Text , On_click
+            (ft.Icons.HOME, "Home", lambda _:self.page.go("/home")),
+            (ft.Icons.CALENDAR_MONTH, "Log", lambda _:self.page.go("/log")),
+            ("skeleton.png", None, lambda _:self.page.go("/shop")),
+            (ft.Icons.MESSENGER_OUTLINE_ROUNDED, "Contents", lambda _:self.page.go("/contents")),
+            (ft.Icons.PERSON_OUTLINE, "MyPage", lambda _:self.page.go("/mypage")),
+        ]
+
         if self.is_onboarding_complete == False:
             basic_content, focus_field = domains.on_boarding_tile(
                 page=self.page, content_page=page_name, change_page_callback=self.page.go
@@ -75,20 +85,18 @@ class Front_dogdog:
                 route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
             )
         else:
-            home_background , main_container_content , appbar_status = domains.home_tile(
+            home_background , main_container_content = domains.home_tile(
                 page=self.page, content_page=page_name, change_page_callback=self.page.go
             )
             main_container = ft.Container(expand=True, padding=ft.Padding.only(left=10, right=10), 
             content=ft.Column(
                 expand=True,
-                alignment=ft.MainAxisAlignment.CENTER,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=main_container_content))
             layout = ft.Stack(expand=True, controls=[home_background, main_container])
             new_view = ft.View(
                 route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
             )
-            dogdog.home_bottom_appbar(new_view, appbar_status, self.page.go)
+            new_view.bottom_appbar = dogdog.home_bottom_appbar(appbar_status)
             
         self.page.views.append(new_view)
         if page_name == "/sign_up_success":

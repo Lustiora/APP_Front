@@ -5,7 +5,7 @@ def input_textfield(
     text_filter=ft.InputFilter(regex_string=r"^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣-a-zA-Zㆍ]*$", replacement_string="")
 ):
     if input_type == "int":
-        text_filter = ft.InputFilter(regex_string=r"^[0-9.]*$", replacement_string="")
+        text_filter = ft.InputFilter(regex_string=r"^[0-9]*$", replacement_string="")
         max_length = 6
     if input_type == "password":
         text_filter = ft.InputFilter(

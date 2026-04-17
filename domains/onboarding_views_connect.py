@@ -94,7 +94,9 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
                 elif gender == "암컷 (중성화)":
                     sex = 2
                     is_neutered = True
-                else: return
+                else: 
+                    show_error(text="성별을 선택해주세요.")
+                    return
                 Api_push_Data.data.update({
                     "nickname": storage("pet_name"), "image_path": storage("image_path"),
                     "breed_id": storage("breed_id"), "birth": birth,

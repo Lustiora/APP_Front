@@ -2,13 +2,13 @@ import flet as ft
 import components as dogdog
 # -------------------------------------------------------------------------------------------------------
 
-def flat_button(text, scale=0.8, icon=None, size=None, expand=None, on_click=None, disabled=True):
+def flat_button(text, scale=0.8, icon=None, size=None, expand=None, on_click=None, disabled=True, bgcolor=ft.Colors.GREY_100):
     return ft.Button(
         icon=icon,
         width=size,
         height=size,
         scale=scale,
-        bgcolor=ft.Colors.GREY_100,
+        bgcolor=bgcolor,
         content=dogdog.basic_text(value=text, color=ft.Colors.GREY_600),
         expand=expand,
         on_click=on_click,
@@ -24,7 +24,7 @@ def icon_flat_button(text, icon, on_click=None):
     return ft.Container(
         expand=True,
         height=90,
-        on_click=lambda _:print(text) if on_click is None else on_click(),
+        on_click=on_click,
         ink=True,
         border_radius=ft.border_radius.all(10),
         border=ft.Border.all(width=2, color=ft.Colors.GREY_200),
