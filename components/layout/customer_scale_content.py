@@ -20,17 +20,17 @@ def home_layout(page, view=None, text=None, pet_list:dict=None): # type: ignore
         icon=ft.Icons.NOTIFICATIONS_NONE, icon_color=ft.Colors.GREY_500, icon_size=26, on_click=lambda _: page.go("/notification")
     )
     
-    body_scale = 1
-    body_margin = -50
-    body_column = ft.Column(spacing=15, expand=True)
+    # body_scale = 1
+    # body_margin = -50
+    # body_column = ft.Column(spacing=15, expand=True)
     header_container_padding = 40
 
     if view == "home":
         top_padding = 40
         background_height = 160
         home_background.height = background_height
-        body_scale = 0.92
-        body_margin = -80
+        # body_scale = 0.92
+        # body_margin = -80
         first_pet_id = next(iter(pet_list.keys()))
         first_pet_birth_day = pet_list.get(first_pet_id).get("birth_day") # type: ignore
         first_pet_birth_sex = pet_list.get(first_pet_id).get("sex") # type: ignore
@@ -117,18 +117,19 @@ def home_layout(page, view=None, text=None, pet_list:dict=None): # type: ignore
             controls=[left_header, center_header, right_header]
     ))
 
-    base_height = 800.0
-    if page.height < base_height: # type: ignore
-        current_height = page.height if page.height > 0 else base_height # type: ignore
-        scale_val = current_height / base_height # type: ignore
-        top_banner.padding = ft.padding.only(
-            top=top_padding * scale_val if scale_val < 1.0 else top_padding
-        )
-        home_background.height = background_height * scale_val if scale_val < 1.0 else background_height
-        body_column.scale = scale_val * body_scale if scale_val < 1.0 else body_scale
-        body_column.margin = ft.margin.only(
-            top=body_margin * scale_val if scale_val < 1.0 else body_margin
-        )
-        page.update()
+    # base_height = 800.0
+    # if page.height < base_height: # type: ignore
+    #     current_height = page.height if page.height > 0 else base_height # type: ignore
+    #     scale_val = current_height / base_height # type: ignore
+    #     top_banner.padding = ft.padding.only(
+    #         top=top_padding * scale_val if scale_val < 1.0 else top_padding
+    #     )
+    #     home_background.height = background_height * scale_val if scale_val < 1.0 else background_height
+    #     body_column.scale = scale_val * body_scale if scale_val < 1.0 else body_scale
+    #     body_column.margin = ft.margin.only(
+    #         top=body_margin * scale_val if scale_val < 1.0 else body_margin
+    #     )
+    #     page.update()
 
-    return (home_background , top_banner , body_column) if view == "home" else (home_background , top_banner)
+    # return (home_background , top_banner , body_column) if view == "home" else (home_background , top_banner)
+    return home_background , top_banner
