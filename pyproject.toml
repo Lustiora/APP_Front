@@ -1,3 +1,8 @@
+[project]
+name = "Dogdog"
+version = "0.1.0"
+description = "Test Build APK"
+requires-python = ">=3.9"
 [tool.flet.app]
 exclude = [
     ".idea",
@@ -17,5 +22,6 @@ exclude = [
     ".gitignore",
     "flet_linux_basic.sh",
     "flet_windows_basic.bat",
-    "flet_windows_test.bat"
+    "flet_windows_test.bat",
+    "print(data)_convert.py",
 ]

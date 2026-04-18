@@ -1,7 +1,8 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
 import components as dogdog
-from api.full_query import Product
+import api.product_data as Product
+import api.product_weight_data as ProductWeight
 # -------------------------------------------------------------------------------------------------------
 class PetfoodController:
     def __init__(self, page: ft.Page):
@@ -44,8 +45,7 @@ class PetfoodController:
             )
         self.food_list = dogdog.update_item_list(
             list_column=self.food_list_column, 
-            query_search=Product.product_search_query, 
-            query_list=Product.product_list_query, 
+            search_data=Product.PRODUCT_LIST,
             select_key=self.selected_food_id, 
             select_value=self.select_food,
             keyword=""
@@ -58,7 +58,7 @@ class PetfoodController:
         if storage.get(key="product_id"):
             self.product_weight_list.visible = True
             self.load_product_weight_list = dogdog.dropdown_list(
-                dropdown_menu=self.product_weight_list, query_list=Product.product_weight_list, key=storage.get("food_id")
+                dropdown_menu=self.product_weight_list, search_data=ProductWeight.PRODUCT_WEIGHT_LIST, key=storage.get("food_id")
             )
             self.product_weight_list.value = storage.get(key="product_id")
         else: self.product_weight_list.visible = False
@@ -72,9 +72,8 @@ class PetfoodController:
         self.page.update() # Overlay Error 방지
     def on_food_search_change(self, e):
         self.food_list = dogdog.update_item_list(
-            list_column=self.food_list_column, 
-            query_search=Product.product_search_query, 
-            query_list=Product.product_list_query, 
+            list_column=self.food_list_column,
+            search_data=Product.PRODUCT_LIST,
             select_key=self.selected_food_id, 
             select_value=self.select_food, 
             keyword=e.control.value)
@@ -88,7 +87,7 @@ class PetfoodController:
         self.page.update() # Overlay Error 방지
         self.product_weight_list.visible = True
         self.load_product_weight_list = dogdog.dropdown_list(
-            dropdown_menu=self.product_weight_list, query_list=Product.product_weight_list, key=food_id
+            dropdown_menu=self.product_weight_list, search_data=ProductWeight.PRODUCT_WEIGHT_LIST, key=food_id
         )
     def food_product_weight_set(self, e):
         self.page.session.store.set(key="product_id", value=e.control.value)

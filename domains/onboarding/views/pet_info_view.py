@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
 import components as dogdog
-from api.full_query import Breed
+import api.breed_data as Breed
 import datetime
 # -------------------------------------------------------------------------------------------------------
 class PetInfoController:
@@ -63,8 +63,7 @@ class PetInfoController:
             )
         self.breed_list = dogdog.update_item_list(
             list_column=self.breed_list_column, 
-            query_search=Breed.breed_search_query, 
-            query_list=Breed.breed_list_query, 
+            search_data=Breed.BREED_LIST,
             select_key=self.selected_breed_id, 
             select_value=self.select_breed, 
             keyword=""
@@ -170,8 +169,7 @@ class PetInfoController:
     def on_breed_search_change(self, e):
         self.breed_list = dogdog.update_item_list(
             list_column=self.breed_list_column, 
-            query_search=Breed.breed_search_query, 
-            query_list=Breed.breed_list_query, 
+            search_data=Breed.BREED_LIST,
             select_key=self.selected_breed_id, 
             select_value=self.select_breed, 
             keyword=e.control.value)
