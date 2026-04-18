@@ -5,7 +5,10 @@ import time
 import components as dogdog
 test_page = ""
 # -------------------------------------------------------------------------------------------------------
+# Mobile Platform
 # flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a
+# Emulator Platform
+# flet build apk --verbose --compile-app --compile-packages
 # -------------------------------------------------------------------------------------------------------
 test_page = "Browser" # APP Build Test 시 주석 처리
 # -------------------------------------------------------------------------------------------------------

@@ -2,7 +2,7 @@ import flet as ft
 import components as dogdog
 import datetime
 
-def content_container_detail(page: ft.Page, customer_food_id, feeding_data):
+def content_container_detail(page: ft.Page, customer_food_id=None, feeding_data:dict=None): # type: ignore
     storage = page.session.store
     def feeding_edit_event(e):
         if storage.get("select_customer_food_id"): storage.remove("select_customer_food_id")
@@ -10,43 +10,50 @@ def content_container_detail(page: ft.Page, customer_food_id, feeding_data):
         storage.set("select_customer_food_id", customer_food_id)
         storage.set("select_feeding_data", feeding_data)
         page.go("/feeding_edit")
-    
-    now = datetime.datetime.now()
-    days = datetime.timedelta(days=feeding_data["left_food_count"])
-    last_feeding_food_count = (now+days).strftime("%Y.%m.%d")
 
-    feeding_food_weight = feeding_data["left_intake"]
-    g_product_weight = feeding_data["total_weight"]
+    now = datetime.datetime.now()
+    days = datetime.timedelta(days=feeding_data["left_food_count"]) if feeding_data else 0
+    last_feeding_food_count = (now+days).strftime("%Y.%m.%d") if days != 0 else "????.??.??"
+
+    feeding_food_weight = feeding_data["left_intake"] if feeding_data else 0
+    g_product_weight = feeding_data["total_weight"] if feeding_data else 5
     kg_product_weight = float(g_product_weight / 1000)
     view_product_weight = (
         f"{kg_product_weight}Kg" if len(str(kg_product_weight).replace(".0", "")) > 2 
             else f"{g_product_weight}g"
+    ) if feeding_data else "???Kg"
+
+    product_detail = ft.Row(height=100, expand=True, controls=[
+        ft.Image(src=feeding_data["thumbnail"], fit=ft.BoxFit.CONTAIN, expand=2),
+        ft.Column(expand=3, spacing=0, alignment=ft.MainAxisAlignment.CENTER, controls=[
+            dogdog.basic_text(value=feeding_data["brand"]),
+            dogdog.basic_text(value=feeding_data["product_name"], weight="bold", max_lines=2)
+        ]),
+        ft.Column(
+            controls=[dogdog.flat_button(text="변경", on_click=feeding_edit_event ,disabled=False)]
+    )] if feeding_data else [dogdog.basic_text(spans=[
+        ft.TextSpan(" 등록된 제품이 없습니다.\n"),
+        ft.TextSpan("제품을 등록하시겠습니까?")
+    ], color=ft.Colors.GREY_600, size=14, max_lines=None)], # type: ignore
+    alignment=ft.MainAxisAlignment.CENTER if not feeding_data else None # type: ignore
     )
 
     detail = [
-        ft.Row(height=100, expand=True, controls=[
-            ft.Image(src=feeding_data["thumbnail"], fit=ft.BoxFit.CONTAIN, expand=2),
-            ft.Column(expand=3, spacing=0, alignment=ft.MainAxisAlignment.CENTER, controls=[
-                dogdog.basic_text(value=feeding_data["brand"]),
-                dogdog.basic_text(value=feeding_data["product_name"], weight="bold", max_lines=2)
-            ]),
-            ft.Column(
-                controls=[dogdog.flat_button(text="변경", on_click=feeding_edit_event ,disabled=False)]
-        )]),
+        product_detail,
         ft.Divider(height=1),
         ft.Column(expand=True, spacing=5, controls=[
             ft.Row(controls=[
                 dogdog.basic_text(spans=[
                     ft.TextSpan(
-                        text=f"{feeding_food_weight}g", 
+                        text=f"{feeding_food_weight if feeding_food_weight != 0 else "???"}g",
                         style=dogdog.TextStyle(size=16)),
                     ft.TextSpan(text=f" / {view_product_weight}")
                 ], color=ft.Colors.GREY_400, weight="bold", size=16),
-                dogdog.flat_button(text=f"{feeding_data["left_food_count"]} 일치 남음", scale=0.7),
+                dogdog.flat_button(text=f"{feeding_data["left_food_count"] if feeding_data else "?"} 일치 남음", scale=0.7),
             ]),
             ft.ProgressBar(
                 height=10,
-                value=feeding_food_weight / g_product_weight if g_product_weight else 0,
+                value=feeding_food_weight / g_product_weight,
                 bgcolor=ft.Colors.GREY_300,
                 color=ft.Colors.YELLOW_600,
                 border_radius=10,
@@ -61,21 +68,17 @@ def content_container_detail(page: ft.Page, customer_food_id, feeding_data):
 
 def feeding_tabs_view(page: ft.Page, customer_food_detail:dict=None): # type: ignore
     def feeding_view(page, customer_food_detail:dict=None): # type: ignore
-        if customer_food_detail:
-            content_column = [
-                dogdog.content_container(
-                    content_list=content_container_detail(
-                        page=page, customer_food_id=customer_food_id, feeding_data=detail
-                )) for customer_food_id , detail in customer_food_detail.items()
-            ]
-        else:
-            content_column = [
-                ft.Row(height=200, alignment=ft.MainAxisAlignment.CENTER, controls=[
-                    dogdog.basic_text(value="등록된 제품이 없습니다.", color=ft.Colors.GREY_600, size=14)
-                ])
-            ]
+        content_column = [
+            dogdog.content_container(
+                content_list=content_container_detail(
+                    page=page, customer_food_id=customer_food_id, feeding_data=detail
+            )) for customer_food_id , detail in customer_food_detail.items()
+        ] if customer_food_detail else [
+            dogdog.content_container(content_list=content_container_detail(page=page))
+        ]
 
         return ft.Container(
+            on_click=(lambda _: page.go("/feeding_add")) if not customer_food_detail else None,
             bgcolor="#ffffff",
             content=ft.Column(
                 margin=ft.margin.only(bottom=10),
@@ -91,13 +94,17 @@ def feeding_tabs_view(page: ft.Page, customer_food_detail:dict=None): # type: ig
     ]
 
     def content_column(content):
-        return ft.Column(scroll=ft.ScrollMode.HIDDEN, expand=True, controls=[content], margin=ft.margin.only(bottom=10))
+        return ft.Column(
+            scroll=ft.ScrollMode.HIDDEN, expand=True, controls=[content], margin=ft.margin.only(bottom=10)
+        )
 
     feeding_content = [
-        content_column(feeding_view(page=page, customer_food_detail=customer_food_detail)),
-        content_column(feeding_view(page=page, customer_food_detail=customer_food_detail)),
-        content_column(feeding_view(page=page)),
-        content_column(feeding_view(page=page))
+        content_column(feeding_view(page=page, customer_food_detail=customer_food_detail)), # 전체 탭
+        content_column(feeding_view(page=page, customer_food_detail=customer_food_detail)), # 사료 탭
+        content_column(feeding_view(page=page)),                                            # 간식 탭
+        # content_column(feeding_view(page=page, customer_food_detail=customer_food_detail)), # 간식 정보 추가될시 사용 예정
+        content_column(feeding_view(page=page)),                                             # 영양제 탭
+        # content_column(feeding_view(page=page, customer_food_detail=customer_food_detail))  # 영양제 정보 추가될시 사용 예정
     ]
     
     feeding_view = ft.Tabs(

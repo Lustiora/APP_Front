@@ -73,40 +73,33 @@ def now_history(page: ft.Page):
     return content_column
 
 def feeding_food_count(page: ft.Page, customer_detail:dict=None): # type: ignore
-    left_intake = 0
-    g_product_weight = 5
-    view_product_weight = "???Kg"
-    feeding_food_count = "??"
-    last_feeding_food_count = "????.??.??"
-
-    if customer_detail:
-        first_customer_detail = customer_detail.get(next(iter(customer_detail.keys())))
-        feeding_food_count = first_customer_detail.get("left_food_count") # type: ignore
-        now = datetime.datetime.now()
-        days = datetime.timedelta(days=feeding_food_count)
-        last_feeding_food_count = (now+days).strftime("%Y.%m.%d")
-        g_product_weight = first_customer_detail.get("total_weight") # type: ignore
-        left_intake = first_customer_detail.get("left_intake") # type: ignore
-        kg_product_weight = float(g_product_weight / 1000)
-        view_product_weight = (
-            f"{kg_product_weight}Kg" if len(str(kg_product_weight).replace(".0", "")) > 2 
-                else f"{g_product_weight}g"
-        )
+    first_customer_detail = customer_detail.get(next(iter(customer_detail.keys()))) if customer_detail else None
+    feeding_food_count = first_customer_detail.get("left_food_count") if customer_detail else 0 # type: ignore
+    now = datetime.datetime.now()
+    days = datetime.timedelta(days=feeding_food_count) if customer_detail else 0
+    last_feeding_food_count = (now+days).strftime("%Y.%m.%d") if days != 0 else "????.??.??"
+    left_intake = first_customer_detail.get("left_intake") if customer_detail else 0 # type: ignore
+    g_product_weight = first_customer_detail.get("total_weight") if customer_detail else 5 # type: ignore
+    kg_product_weight = float(g_product_weight / 1000)
+    view_product_weight = (
+        f"{kg_product_weight}Kg" if len(str(kg_product_weight).replace(".0", "")) > 2 
+            else f"{g_product_weight}g"
+    ) if customer_detail else "???Kg"
 
     content_column = [
         dogdog.basic_text(value="급여 중인 사료 잔여량", size=17, weight="bold"),
         ft.Row(
             controls=[
                 dogdog.basic_text(spans=[
-                    ft.TextSpan(f"{left_intake}g", style=dogdog.TextStyle(size=16)),
+                    ft.TextSpan(f"{left_intake if left_intake != 0 else "???"}g", style=dogdog.TextStyle(size=16)),
                     ft.TextSpan(f" / {view_product_weight}")
                 ], color=ft.Colors.GREY_400, weight="bold", size=16),
-                dogdog.flat_button(f"{feeding_food_count} 일치 남음", scale=0.7),
+                dogdog.flat_button(f"{feeding_food_count if feeding_food_count else "?"} 일치 남음", scale=0.7),
             ],
         ),
         ft.ProgressBar(
             height=10,
-            value=left_intake / g_product_weight if g_product_weight else 0,
+            value=left_intake / g_product_weight,
             bgcolor=ft.Colors.GREY_300,
             color=ft.Colors.YELLOW_600,
             border_radius=10,

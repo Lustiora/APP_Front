@@ -11,5 +11,4 @@ from .onboarding.views.pet_health_view import pet_health_view
 from .onboarding.views.pet_food_view import pet_food_view
 
 from .home_views_connect import home_tile
-from .home import grid
-from .home.views import home , feeding , feeding_edit
+from .home.views import home , feeding , feeding_edit , grid
