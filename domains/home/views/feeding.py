@@ -32,8 +32,8 @@ def content_container_detail(page: ft.Page, customer_food_id=None, feeding_data:
         ft.Column(
             controls=[dogdog.flat_button(text="변경", on_click=feeding_edit_event ,disabled=False)]
     )] if feeding_data else [dogdog.basic_text(spans=[
-        ft.TextSpan(" 등록된 제품이 없습니다.\n"),
-        ft.TextSpan("제품을 등록하시겠습니까?")
+        ft.TextSpan(" 등록된 제품이 없습니다."),
+        # ft.TextSpan("\n제품을 등록하시겠습니까?")
     ], color=ft.Colors.GREY_600, size=14, max_lines=None)], # type: ignore
     alignment=ft.MainAxisAlignment.CENTER if not feeding_data else None # type: ignore
     )
@@ -66,8 +66,10 @@ def content_container_detail(page: ft.Page, customer_food_id=None, feeding_data:
 
     return detail
 
-def feeding_tabs_view(page: ft.Page, customer_food_detail:dict=None): # type: ignore
-    def feeding_view(page, customer_food_detail:dict=None): # type: ignore
+def feeding_tabs_view(page: ft.Page):
+    storage = page.session.store
+    def feeding_view(page):
+        customer_food_detail = storage.get("customer_detail")
         content_column = [
             dogdog.content_container(
                 content_list=content_container_detail(
@@ -99,12 +101,10 @@ def feeding_tabs_view(page: ft.Page, customer_food_detail:dict=None): # type: ig
         )
 
     feeding_content = [
-        content_column(feeding_view(page=page, customer_food_detail=customer_food_detail)), # 전체 탭
-        content_column(feeding_view(page=page, customer_food_detail=customer_food_detail)), # 사료 탭
-        content_column(feeding_view(page=page)),                                            # 간식 탭
-        # content_column(feeding_view(page=page, customer_food_detail=customer_food_detail)), # 간식 정보 추가될시 사용 예정
-        content_column(feeding_view(page=page)),                                             # 영양제 탭
-        # content_column(feeding_view(page=page, customer_food_detail=customer_food_detail))  # 영양제 정보 추가될시 사용 예정
+        content_column(feeding_view(page=page)), # 전체 탭
+        content_column(feeding_view(page=page)), # 사료 탭
+        content_column(feeding_view(page=page)), # 간식 탭
+        content_column(feeding_view(page=page)), # 영양제 탭
     ]
     
     feeding_view = ft.Tabs(

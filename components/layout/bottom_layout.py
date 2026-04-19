@@ -41,11 +41,12 @@ def bottom_appbar(appbar_button_list:list):
                 ft.Row(controls=appbar_button_list, expand=True, spacing=0)
     ]))
 
-def home_bottom_appbar(appbar_status):
+def home_bottom_appbar(appbar_status, page_name):
     def appbar_button(icon, text, on_click):
-        if type(icon) == type(None):
-            return ft.Container(expand=True)
-        elif type(icon) == type("str"):
+        if f"/{text.lower()}" == page_name if type(text) == str else None:
+            button_color = ft.Colors.BLACK
+        else: button_color = ft.Colors.GREY_400
+        if type(icon) == type("str"):
             return ft.Container(
                 width=80,
                 height=80,
@@ -70,8 +71,8 @@ def home_bottom_appbar(appbar_status):
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=3,
                 controls=[
-                    ft.Icon(icon=icon, color=ft.Colors.GREY_400, size=22),
-                    dogdog.basic_text(value=text, size=12, color=ft.Colors.GREY_400),
+                    ft.Icon(icon=icon, color=button_color, size=22),
+                    dogdog.basic_text(value=text, size=12, color=button_color),
                 ],
             ),
         )

@@ -4,6 +4,9 @@ import components as dogdog
 import datetime
 # -------------------------------------------------------------------------------------------------------
 def now_history(page: ft.Page):
+    # ---------------------------------------------------------------------------------------------------
+    # Now History View (제작중)
+    # ---------------------------------------------------------------------------------------------------
     content_column = [
         ft.Row([
                 dogdog.basic_text(value="오늘의 기록", size=18, weight="bold"),
@@ -72,7 +75,12 @@ def now_history(page: ft.Page):
     ]
     return content_column
 
-def feeding_food_count(page: ft.Page, customer_detail:dict=None): # type: ignore
+def feeding_food_count(page: ft.Page):
+    # ---------------------------------------------------------------------------------------------------
+    # Default Value
+    # ---------------------------------------------------------------------------------------------------
+    storage = page.session.store
+    customer_detail = (storage.get("customer_detail"))
     first_customer_detail = customer_detail.get(next(iter(customer_detail.keys()))) if customer_detail else None
     feeding_food_count = first_customer_detail.get("left_food_count") if customer_detail else 0 # type: ignore
     now = datetime.datetime.now()
@@ -85,7 +93,9 @@ def feeding_food_count(page: ft.Page, customer_detail:dict=None): # type: ignore
         f"{kg_product_weight}Kg" if len(str(kg_product_weight).replace(".0", "")) > 2 
             else f"{g_product_weight}g"
     ) if customer_detail else "???Kg"
-
+    # ---------------------------------------------------------------------------------------------------
+    # Feeding List First Product View
+    # ---------------------------------------------------------------------------------------------------
     content_column = [
         dogdog.basic_text(value="급여 중인 사료 잔여량", size=17, weight="bold"),
         ft.Row(
