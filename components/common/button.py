@@ -40,3 +40,20 @@ def icon_flat_button(text, icon, on_click=None):
             ]
         )
     )
+
+
+def flat_icon_text_button(icon, value):
+    return ft.Container(
+        ink=True,
+        border_radius=ft.border_radius.all(10),
+        padding=4,
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=5,
+            controls=[
+                ft.Icon(icon=icon, color=ft.Colors.GREY_600, size=16),
+                dogdog.basic_text(value=value, color=ft.Colors.GREY_600),
+            ]
+        )
+    )

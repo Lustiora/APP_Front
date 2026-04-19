@@ -1,4 +1,4 @@
-class Test:
+class User:
     pet_list = {
         # pet_id : {nickname, birth_day, sex},
         1:{"nickname":"바둑이테", "birth_day":"2023-01-01", "sex":"1", "profile_image":None},

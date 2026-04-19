@@ -1,5 +1,6 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
+from flet import DeviceOrientation
 import domains
 import time
 import components as dogdog
@@ -7,8 +8,6 @@ test_page = ""
 # -------------------------------------------------------------------------------------------------------
 # Mobile Platform
 # flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a
-# Emulator Platform
-# flet build apk --verbose --compile-app --compile-packages
 # -------------------------------------------------------------------------------------------------------
 test_page = "Browser" # APP Build Test 시 주석 처리
 # -------------------------------------------------------------------------------------------------------
@@ -18,6 +17,7 @@ class Front_dogdog:
         # Default Page Value
         # -----------------------------------------------------------------------------------------------
         self.page = page
+        # popop = dogdog.Popup(page=page)
         page.title = "Dog Dog"
         page.theme_mode = ft.ThemeMode.LIGHT
         page.fonts = {"Pretendard": "fonts/Pretendard-Regular.otf"}
@@ -33,6 +33,7 @@ class Front_dogdog:
 
         page.on_route_change = self.on_route_change
         page.on_view_pop = self.handle_back
+        # page.on_disconnect = popop.show_exit_open
         self.is_onboarding_complete = True
         # -----------------------------------------------------------------------------------------------
         # Init First View
@@ -99,7 +100,7 @@ class Front_dogdog:
             new_view = ft.View(
                 route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
             )
-            new_view.bottom_appbar = dogdog.home_bottom_appbar(appbar_status)
+            new_view.bottom_appbar = dogdog.home_bottom_appbar(appbar_status, page_name)
             
         self.page.views.append(new_view)
         if page_name == "/sign_up_success":
@@ -112,7 +113,10 @@ class Front_dogdog:
             self.page.go("/home")
         self.page.update()
 # -------------------------------------------------------------------------------------------------------
-def main(page: ft.Page): front_end = Front_dogdog(page=page)
+async def main(page: ft.Page): 
+    front_end = Front_dogdog(page=page)
+    if page.platform == ft.PagePlatform.ANDROID:
+        await page.set_allowed_device_orientations([DeviceOrientation.PORTRAIT_UP])
 # -------------------------------------------------------------------------------------------------------
 if test_page == "Browser":
     import logging, warnings
