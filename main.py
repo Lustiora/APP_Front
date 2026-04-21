@@ -17,7 +17,6 @@ class Front_dogdog:
         # Default Page Value
         # -----------------------------------------------------------------------------------------------
         self.page = page
-        # popop = dogdog.Popup(page=page)
         page.title = "Dog Dog"
         page.theme_mode = ft.ThemeMode.LIGHT
         page.fonts = {"Pretendard": "fonts/Pretendard-Regular.otf"}
@@ -29,11 +28,17 @@ class Front_dogdog:
                 surface=ft.Colors.WHITE,
                 on_surface=ft.Colors.BLACK,
                 on_surface_variant=ft.Colors.BLACK,
-        ))
+            ),page_transitions=ft.PageTransitionsTheme(
+                android="None", # type: ignore
+                ios="None", # type: ignore
+                macos="None", # type: ignore
+                linux="None", # type: ignore
+                windows="None", # type: ignore
+            )
+        )
 
         page.on_route_change = self.on_route_change
         page.on_view_pop = self.handle_back
-        # page.on_disconnect = popop.show_exit_open
         self.is_onboarding_complete = True
         # -----------------------------------------------------------------------------------------------
         # Init First View
@@ -89,6 +94,9 @@ class Front_dogdog:
                 route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
             )
         else:
+            # print(len(self.page.views))
+            if page_name == "/home":
+                self.page.views.clear()
             home_background , main_container_content = domains.home_tile(
                 page=self.page, content_page=page_name, change_page_callback=self.page.go
             )

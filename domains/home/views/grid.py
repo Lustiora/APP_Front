@@ -2,6 +2,7 @@
 import flet as ft
 import components as dogdog
 import datetime
+import time
 # -------------------------------------------------------------------------------------------------------
 class StatusController:
     def __init__(self, page: ft.Page):
@@ -10,7 +11,31 @@ class StatusController:
         # -----------------------------------------------------------------------------------------------
         self.page = page
         self.storage = page.session.store
-        self.grid_bottom_sheet = dogdog.bottom_sheet(content=[])
+        if self.storage.get("customer_food_id"): self.storage.remove("customer_food_id")
+        self.grid_bottom_sheet = ft.AlertDialog(
+            alignment=ft.Alignment(0, 1),
+            expand=True,
+            inset_padding=0,
+            content_padding=0,
+            action_button_padding=0,
+            actions_padding=0,
+            scrollable=True,
+            content=ft.Container(
+                width=3000,
+                padding=20,
+                bgcolor=ft.Colors.WHITE,
+                border_radius=ft.BorderRadius.only(
+                    top_left=20,
+                    top_right=20,
+                ),
+                content=ft.Column(
+                    offset=ft.Offset(0,0),
+                    tight=True,
+                    expand=True,
+                    spacing=10
+                )
+            )
+        )
         self.bottom_sheet_contents = self.grid_bottom_sheet.content.content.controls # type: ignore
         # -----------------------------------------------------------------------------------------------
         self.date_picker = ft.DatePicker(
@@ -63,31 +88,54 @@ class StatusController:
                     value.strftime("%p %H:%M").replace("AM", "오전").replace("PM", "오후"))
         self.grid_bottom_sheet.update()
     # ---------------------------------------------------------------------------------------------------
-    # Test Dialog
+    # Error Move
     # ---------------------------------------------------------------------------------------------------
-    def show_error(self, text:str): self.page.show_dialog(ft.SnackBar(content=ft.Text(value=text), open=True))
+    def show_error(self):
+        self.grid_bottom_sheet.content.content.offset = ft.Offset(0, 0)
+        self.page.update()
+        print('t')
+        time.sleep(0.5)
+        self.grid_bottom_sheet.content.content.offset = ft.Offset(10, 0)
+        self.page.update()
+        print('t')
+        time.sleep(0.5)
+        self.grid_bottom_sheet.content.content.offset = ft.Offset(-10, 0)
+        self.page.update()
+        print('t')
+        time.sleep(0.5)
+        self.grid_bottom_sheet.content.content.offset = ft.Offset(0, 0)
+        self.page.update()
+        print('t')
     # ---------------------------------------------------------------------------------------------------
     # Button Push Event
     # ---------------------------------------------------------------------------------------------------
     def button_event(self, e, call, content):
-        if content == "edit":
-            self.show_error(content)
-        elif content == "delete":
-            self.show_error(content)
+        event_text = {}
+        if content == "edit": pass
+            # self.show_error(content)
+        elif content == "delete": pass
+            # self.show_error(content)
         elif content == "save":
-            self.storage.get("customer_food_id") if call == "feeding" else None
-            self.show_error(
-                f"{call} customer food id: {self.storage.get("customer_food_id") if call == "feeding" else None}\n" 
-                f"{call} weight: {self.storage.get(f"{call}_weight") if self.storage.get(f"{call}_weight") else None}\n"
-                f"{call} memo: {self.storage.get(f"{call}_memo") if self.storage.get(f"{call}_memo") else None}\n"
-                f"{call} date: {self.storage.get(f"{call}_date")}\n"
-                f"{call} time: {self.storage.get(f"{call}_time")}"
-            )
+            if call == "feeding" and self.storage.get("customer_food_id"):
+                event_text.update({"customer_food_id":self.storage.get("customer_food_id")})
+            else:
+                self.show_error()
+                # self.show_error("사료를 선택해주세요.")
+                return
+            if self.storage.get(f"{call}_weight"):
+                event_text.update({f"{call}_weight":self.storage.get(f"{call}_weight")})
+            else:
+                # self.show_error("급여량을 입력해주세요.")
+                return
+            if self.storage.get(f"{call}_memo"): 
+                event_text.update({f"{call}_memo":self.storage.get("customer_food_id")})
+            event_text.update({f"{call} date":self.storage.get(f"{call} date")})
+            event_text.update({f"{call} time":self.storage.get(f"{call} time")})
+            # self.show_error(f"{content}_{call}: {event_text}")
         elif content == "feeding_add":
             self.page.go("/feeding_add")
-            self.show_error(content)
-        elif content == "cancel":
-            self.show_error(content)
+            # self.show_error(content)
+        elif content == "cancel": pass
         self.grid_bottom_sheet.open = False
         self.page.update()
     # ---------------------------------------------------------------------------------------------------
@@ -114,15 +162,15 @@ def bottom_sheet(e, page, call):
                     "취소", disabled=False, scale=1,
                     on_click=lambda e, menu=call, content="cancel": s_control.button_event(e, call,content)),
                 # dogdog.flat_button(
-                #     "수정", disabled=False, scale=1, bgcolor="#FEF3B9",  # type: ignore
+                #     "수정", disabled=False, scale=1, bgcolor="#FEF3B9", 
                 #     on_click=lambda e, menu=call, content="edit": button_event(e, call, content)),
                 # dogdog.flat_button(
-                #     "삭제", disabled=False, scale=1, bgcolor="#FEF3B9",  # type: ignore
+                #     "삭제", disabled=False, scale=1, bgcolor="#FEF3B9", 
                 #     on_click=lambda e, menu=call, content="delete": button_event(e, call, content)),
                 dogdog.flat_button(
-                    "저장", disabled=False, scale=1, bgcolor="#FEF3B9",  # type: ignore
+                    "저장", disabled=False, scale=1, bgcolor="#FEF3B9", # type: ignore
                     on_click=lambda e, menu=call, content="save": s_control.button_event(e, call, content)),
-            ]
+            ] # type: ignore
         )
     # ---------------------------------------------------------------------------------------------------
     def data_time_select(call):
@@ -147,11 +195,13 @@ def bottom_sheet(e, page, call):
                         dogdog.basic_text(
                             value=f"오늘 {storage.get('customer_pet_name')}에게 딱 알맞는 1회 급여량은 ...",
                             size=16, weight="bold", color=ft.Colors.GREY_600)]),
-                    ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER, controls=[
-                        ft.Image(src="speech_bubble.png", height=100, color="#FEF3B9"),
-                        dogdog.basic_text("40g", weight="bold", size=40),
-                    ], spacing=-90),
-                    ft.Image(src="dogbowl.png", height=100, margin=ft.margin.only(top=20))
+                    # ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
+                        ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER, controls=[
+                            ft.Image(src="speech_bubble.png", height=100, color="#FEF3B9"),
+                            dogdog.basic_text("40g", weight="bold", size=40),
+                        ], spacing=-90),
+                        ft.Image(src="dogbowl.png", height=100, margin=ft.margin.only(top=20))
+                    # ])
             ])
             food = [dogdog.dropdown_menu_option(
                 key=customer_food_id, text=f"{detail.get("brand")} {detail.get("product_name")}"
@@ -169,7 +219,7 @@ def bottom_sheet(e, page, call):
             if storage.get(f"{call}_weight"): storage.remove(f"{call}_weight")
             
             feeding_memo = dogdog.input_textfield(
-                hint_text="메모 (선택)", text_filter=None, max_length=None,  # type: ignore
+                hint_text="메모 (선택)", text_filter=None, max_length=None, # type: ignore
                 on_change=lambda e, change=f"{call}_memo": s_control.change_event(e, change))
             if storage.get(f"{call}_memo"): storage.remove(f"{call}_memo")
             # -------------------------------------------------------------------------------------------
@@ -189,14 +239,14 @@ def bottom_sheet(e, page, call):
             ])
             setting_content = [
                 dogdog.flat_button(
-                    "등록하러가기", disabled=False, scale=1, bgcolor="#FEF3B9",  # type: ignore
+                    "등록하러가기", disabled=False, scale=1, bgcolor="#FEF3B9", # type: ignore 
                     on_click=lambda e, menu=call, content="feeding_add": 
                     s_control.button_event(e, call, content)),
                 dogdog.flat_button(
                     "나중에 등록할께요", disabled=False, scale=1,
                     on_click=lambda e, menu=call, content="cancel": 
                     s_control.button_event(e, call, content)),
-            ]
+            ] # type: ignore
             setting = ft.Row(
                 alignment=ft.MainAxisAlignment.CENTER,
                 controls=[ft.Column(
@@ -216,7 +266,7 @@ def bottom_sheet(e, page, call):
         if storage.get(f"{call}_weight"): storage.remove(f"{call}_weight")
         
         watering_memo = dogdog.input_textfield(
-            hint_text="메모 (선택)", text_filter=None, max_length=None,  # type: ignore
+            hint_text="메모 (선택)", text_filter=None, max_length=None, # type: ignore
             on_change=lambda e, change=f"{call}_memo": s_control.change_event(e, change))
         if storage.get(f"{call}_memo"): storage.remove(f"{call}_memo")
         # -----------------------------------------------------------------------------------------------
@@ -231,7 +281,7 @@ def bottom_sheet(e, page, call):
         if storage.get(f"{call}_weight"): storage.remove(f"{call}_weight")
         
         daily_walks_memo = dogdog.input_textfield(
-            hint_text="메모 (선택)", text_filter=None, max_length=None,  # type: ignore
+            hint_text="메모 (선택)", text_filter=None, max_length=None, # type: ignore
             on_change=lambda e, change=f"{call}_memo": s_control.change_event(e, change))
         if storage.get(f"{call}_memo"): storage.remove(f"{call}_memo")
         # -----------------------------------------------------------------------------------------------
@@ -240,24 +290,25 @@ def bottom_sheet(e, page, call):
     # ---------------------------------------------------------------------------------------------------
     elif call == "hygiene_bowel":
         s_control.bottom_sheet_title("위생/배변")
-        hygiene_bowel = dogdog.input_textfield(
-            hint_text="[드롭다운 수정 예정]배변 스코어 (1~7)", input_type="int",
-            on_change=lambda e, change=f"{call}_weight": s_control.change_event(e, change))
-        hygiene_bowel.max_length = 1
+        hygiene_bowel_score = dogdog.dropdown_menu(
+            label="배변 스코어를 선택해주세요.", options=[], 
+            event=lambda e, change=f"{call}_weight": s_control.change_event(e, change)
+        )
+        hygiene_bowel_score.options = [dogdog.dropdown_menu_option(text=f"{row}") for row in range(1,8)]
         if storage.get(f"{call}_weight"): storage.remove(f"{call}_weight")
         
         hygiene_bowel_memo = dogdog.input_textfield(
-            hint_text="메모 (선택)", text_filter=None, max_length=None,  # type: ignore
+            hint_text="메모 (선택)", text_filter=None, max_length=None, # type: ignore
             on_change=lambda e, change=f"{call}_memo": s_control.change_event(e, change))
         if storage.get(f"{call}_memo"): storage.remove(f"{call}_memo")
         # -----------------------------------------------------------------------------------------------
-        s_control.bottom_sheet_contents.append(hygiene_bowel)
+        s_control.bottom_sheet_contents.append(hygiene_bowel_score)
         s_control.bottom_sheet_contents.append(hygiene_bowel_memo)
     # ---------------------------------------------------------------------------------------------------
     elif call == "health_log":
         s_control.bottom_sheet_title("건강기록")
         health_log = dogdog.input_textfield(
-            hint_text="건강상태를 작성해주세요.", text_filter=None, max_length=None,  # type: ignore
+            hint_text="건강상태를 작성해주세요.", text_filter=None, max_length=None, # type: ignore
             on_change=lambda e, change=f"{call}_memo": s_control.change_event(e, change))
         if storage.get(f"{call}_memo"): storage.remove(f"{call}_memo")
         # -----------------------------------------------------------------------------------------------
@@ -266,7 +317,7 @@ def bottom_sheet(e, page, call):
     elif call == "status_log":
         s_control.bottom_sheet_title("상태기록")
         status_log = dogdog.input_textfield(
-            hint_text="기타상태를 작성해주세요.", text_filter=None, max_length=None,  # type: ignore
+            hint_text="기타상태를 작성해주세요.", text_filter=None, max_length=None, # type: ignore
             on_change=lambda e, change=f"{call}_memo": s_control.change_event(e, change))
         if storage.get(f"{call}_memo"): storage.remove(f"{call}_memo")
         # -----------------------------------------------------------------------------------------------
