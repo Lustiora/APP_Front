@@ -1,20 +1,21 @@
 import flet as ft
+import components as dogdog
 
 class Popup:
     def __init__(self, page: ft.Page):
         self.page = page
 
-        self.main_quit = ft.AlertDialog(
+        self.event_popup = ft.AlertDialog(
             modal=True,
-            title=ft.Text("Quit"),
-            content=ft.Text("Exit?"),
+            title=dogdog.basic_text(value="Quit"),
+            content=dogdog.basic_text(value="Exit?"),
             actions_alignment = ft.MainAxisAlignment.END,
             actions=[
-                ft.TextButton("OK", on_click=self.exit, autofocus=True),
-                ft.TextButton("Cancel", on_click=self.show_exit_close)
+                ft.TextButton("OK"),
+                ft.TextButton("Cancel", on_click=self.show_event_popup_close)
             ]
         )
-        page.overlay.append(self.main_quit) if self.main_quit in page.overlay else None
+        page.overlay.append(self.event_popup) if self.event_popup in page.overlay else None
 
         self.api_insert_dialog = ft.AlertDialog(
             modal=True,
@@ -24,23 +25,23 @@ class Popup:
         )
         page.overlay.append(self.api_insert_dialog) if self.api_insert_dialog in page.overlay else None
 
-    def show_open(self, e): 
+    async def show_open(self, e):
         self.page.show_dialog(self.api_insert_dialog)
         self.page.update()
 
-    def show_close(self, e): 
+    async def show_close(self, e):
         self.page.pop_dialog()
         self.page.update()
     
-    def show_exit_open(self, e):
-        self.page.show_dialog(self.main_quit)
-        self.page.update()
+    def show_event_popup_open(self, e, title:str, text:str, focus:bool=True, on_click=None):
+        self.event_popup.title.value = title # type: ignore
+        self.event_popup.content.value = text # type: ignore
+        self.event_popup.actions[0].autofocus = focus # type: ignore
+        self.event_popup.actions[0].on_click = on_click # type: ignore
 
-    async def exit(self, e):
-        await self.page.window.close()
-        await self.page.window.destroy()
+        self.page.show_dialog(self.event_popup)
+        self.page.update()
     
-    def show_exit_close(self, e):
+    def show_event_popup_close(self, e):
         self.page.pop_dialog()
-        self.page.go("/home")
         self.page.update()
