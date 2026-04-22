@@ -2,7 +2,6 @@
 import flet as ft
 import components as dogdog
 import datetime
-import time
 # -------------------------------------------------------------------------------------------------------
 class StatusController:
     def __init__(self, page: ft.Page):
@@ -11,6 +10,10 @@ class StatusController:
         # -----------------------------------------------------------------------------------------------
         self.page = page
         self.storage = page.session.store
+        self.popup = dogdog.Popup(page=page)
+        self.popup.event_popup.actions[0] = ft.Row()
+        self.popup.event_popup.actions[1].content = "닫기" # type: ignore
+        self.popup.event_popup.modal = False
         if self.storage.get("customer_food_id"): self.storage.remove("customer_food_id")
         self.grid_bottom_sheet = ft.AlertDialog(
             alignment=ft.Alignment(0, 1),
@@ -29,7 +32,6 @@ class StatusController:
                     top_right=20,
                 ),
                 content=ft.Column(
-                    offset=ft.Offset(0,0),
                     tight=True,
                     expand=True,
                     spacing=10
@@ -88,53 +90,48 @@ class StatusController:
                     value.strftime("%p %H:%M").replace("AM", "오전").replace("PM", "오후"))
         self.grid_bottom_sheet.update()
     # ---------------------------------------------------------------------------------------------------
-    # Error Move
-    # ---------------------------------------------------------------------------------------------------
-    def show_error(self):
-        self.grid_bottom_sheet.content.content.offset = ft.Offset(0, 0)
-        self.page.update()
-        print('t')
-        time.sleep(0.5)
-        self.grid_bottom_sheet.content.content.offset = ft.Offset(10, 0)
-        self.page.update()
-        print('t')
-        time.sleep(0.5)
-        self.grid_bottom_sheet.content.content.offset = ft.Offset(-10, 0)
-        self.page.update()
-        print('t')
-        time.sleep(0.5)
-        self.grid_bottom_sheet.content.content.offset = ft.Offset(0, 0)
-        self.page.update()
-        print('t')
-    # ---------------------------------------------------------------------------------------------------
     # Button Push Event
     # ---------------------------------------------------------------------------------------------------
     def button_event(self, e, call, content):
+        callcase = {
+            "feeding":{"밥주기":"사료, 급여량을 선택 / 작성해주세요."},
+            "watering": {"물주기":"물 섭취량을 적어주세요."},
+            "daily_walks": {"활동기록":"산책시간을 적어주세요."}, 
+            "hygiene_bowel": {"위생/배변":"배변 스코어를 선택해주세요."},
+            "health_log": {"건강기록":"건강상태를 작성해주세요."},
+            "status_log": {"상태기록":"기타상태를 작성해주세요."},
+        }
+        for for_call_title, for_call_message in callcase.get(call).items(): # type: ignore
+            call_title = for_call_title
+            call_message = for_call_message
         event_text = {}
         if content == "edit": pass
             # self.show_error(content)
         elif content == "delete": pass
             # self.show_error(content)
         elif content == "save":
-            if call == "feeding" and self.storage.get("customer_food_id"):
-                event_text.update({"customer_food_id":self.storage.get("customer_food_id")})
-            else:
-                self.show_error()
-                # self.show_error("사료를 선택해주세요.")
-                return
+            if call == "feeding":
+                if self.storage.get("customer_food_id"):
+                    event_text.update({"customer_food_id":self.storage.get("customer_food_id")})
+                else:
+                    self.popup.show_event_popup_open(e=e, title=call_title, text=call_message)
+                    return
             if self.storage.get(f"{call}_weight"):
                 event_text.update({f"{call}_weight":self.storage.get(f"{call}_weight")})
+            elif call in ("health_log","status_log"): pass
             else:
-                # self.show_error("급여량을 입력해주세요.")
+                self.popup.show_event_popup_open(e=e, title=call_title, text=call_message)
                 return
-            if self.storage.get(f"{call}_memo"): 
+            if self.storage.get(f"{call}_memo"):
                 event_text.update({f"{call}_memo":self.storage.get("customer_food_id")})
-            event_text.update({f"{call} date":self.storage.get(f"{call} date")})
-            event_text.update({f"{call} time":self.storage.get(f"{call} time")})
-            # self.show_error(f"{content}_{call}: {event_text}")
-        elif content == "feeding_add":
-            self.page.go("/feeding_add")
-            # self.show_error(content)
+            else:
+                if call in ("health_log","status_log"):
+                    self.popup.show_event_popup_open(e=e, title=call_title, text=call_message)
+                    return
+            event_text.update({f"{call}_date":self.storage.get(f"{call}_date")})
+            event_text.update({f"{call}_time":self.storage.get(f"{call}_time")})
+            self.popup.show_event_popup_open(e=e, title=call, text=event_text)
+        elif content == "feeding_add": self.page.go("/feeding_add")
         elif content == "cancel": pass
         self.grid_bottom_sheet.open = False
         self.page.update()
@@ -161,12 +158,6 @@ def bottom_sheet(e, page, call):
                 dogdog.flat_button(
                     "취소", disabled=False, scale=1,
                     on_click=lambda e, menu=call, content="cancel": s_control.button_event(e, call,content)),
-                # dogdog.flat_button(
-                #     "수정", disabled=False, scale=1, bgcolor="#FEF3B9", 
-                #     on_click=lambda e, menu=call, content="edit": button_event(e, call, content)),
-                # dogdog.flat_button(
-                #     "삭제", disabled=False, scale=1, bgcolor="#FEF3B9", 
-                #     on_click=lambda e, menu=call, content="delete": button_event(e, call, content)),
                 dogdog.flat_button(
                     "저장", disabled=False, scale=1, bgcolor="#FEF3B9", # type: ignore
                     on_click=lambda e, menu=call, content="save": s_control.button_event(e, call, content)),

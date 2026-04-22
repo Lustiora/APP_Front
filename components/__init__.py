@@ -3,7 +3,7 @@ from .layout.bottom_layout import continue_button , arrow_back , home_bottom_app
 
 from .layout.home_layout import home_layout
 
-from .layout.loding_popup import Popup
+from .layout.popup import Popup
 
 from .common.item_list_column import update_item_list , dropdown_list
 from .common.radio_group import radio_group

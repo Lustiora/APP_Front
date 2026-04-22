@@ -36,7 +36,6 @@ class Front_dogdog:
                 windows="None", # type: ignore
             )
         )
-
         page.on_route_change = self.on_route_change
         page.on_view_pop = self.handle_back
         self.is_onboarding_complete = True

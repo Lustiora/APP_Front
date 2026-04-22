@@ -1,5 +1,7 @@
 import flet as ft
 import components as dogdog
+import time
+# -------------------------------------------------------------------------------------------------------
 
 class Popup:
     def __init__(self, page: ft.Page):
@@ -33,7 +35,7 @@ class Popup:
         self.page.pop_dialog()
         self.page.update()
     
-    def show_event_popup_open(self, e, title:str, text:str, focus:bool=True, on_click=None):
+    def show_event_popup_open(self, e, title:str, text, focus:bool=True, on_click=None):
         self.event_popup.title.value = title # type: ignore
         self.event_popup.content.value = text # type: ignore
         self.event_popup.actions[0].autofocus = focus # type: ignore
@@ -41,6 +43,7 @@ class Popup:
 
         self.page.show_dialog(self.event_popup)
         self.page.update()
+
     
     def show_event_popup_close(self, e):
         self.page.pop_dialog()
