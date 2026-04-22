@@ -68,19 +68,20 @@ def content_container_detail(page: ft.Page, customer_food_id=None, feeding_data:
 
 def feeding_tabs_view(page: ft.Page):
     storage = page.session.store
-    def feeding_view(page):
+    def feeding_view_case(page, set=False):
         customer_food_detail = storage.get("customer_detail")
         content_column = [
             dogdog.content_container(
                 content_list=content_container_detail(
                     page=page, customer_food_id=customer_food_id, feeding_data=detail
             )) for customer_food_id , detail in customer_food_detail.items()
-        ] if customer_food_detail else [
-            dogdog.content_container(content_list=content_container_detail(page=page))
+        ] if customer_food_detail and set else [
+            dogdog.content_container(
+                content_list=content_container_detail(page=page), 
+                on_click=lambda _: page.go("/feeding_add"))
         ]
 
         return ft.Container(
-            on_click=(lambda _: page.go("/feeding_add")) if not customer_food_detail else None,
             bgcolor="#ffffff",
             content=ft.Column(
                 margin=ft.margin.only(bottom=10),
@@ -101,10 +102,10 @@ def feeding_tabs_view(page: ft.Page):
         )
 
     feeding_content = [
-        content_column(feeding_view(page=page)), # 전체 탭
-        content_column(feeding_view(page=page)), # 사료 탭
-        content_column(feeding_view(page=page)), # 간식 탭
-        content_column(feeding_view(page=page)), # 영양제 탭
+        content_column(feeding_view_case(page=page, set=True)), # 전체 탭
+        content_column(feeding_view_case(page=page, set=True)), # 사료 탭
+        content_column(feeding_view_case(page=page)), # 간식 탭
+        content_column(feeding_view_case(page=page)), # 영양제 탭
     ]
     
     feeding_view = ft.Tabs(
