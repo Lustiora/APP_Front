@@ -4,6 +4,7 @@ from flet import DeviceOrientation
 import domains
 import time
 import components as dogdog
+from api.user_data import User
 test_page = ""
 # -------------------------------------------------------------------------------------------------------
 # Mobile Platform
@@ -17,6 +18,10 @@ class Front_dogdog:
         # Default Page Value
         # -----------------------------------------------------------------------------------------------
         self.page = page
+        storage = page.session.store
+        storage.set("pet_list", User.pet_list)
+        storage.set("customer_detail", User.customer_food_detail)
+        storage.set("history", User.pet_log)
         page.title = "Dog Dog"
         page.theme_mode = ft.ThemeMode.LIGHT
         page.fonts = {"Pretendard": "fonts/Pretendard-Regular.otf"}
@@ -38,13 +43,12 @@ class Front_dogdog:
         )
         page.on_route_change = self.on_route_change
         page.on_view_pop = self.handle_back
-        self.is_onboarding_complete = True
         # -----------------------------------------------------------------------------------------------
         # Init First View
         # -----------------------------------------------------------------------------------------------
+        self.is_onboarding_complete = True if User.pet_list else False
         page.views.clear()
         target_route = "/home" if self.is_onboarding_complete else "/sign_up"
-        
         if self.page.route == target_route:
             self.routing_view(page_name=target_route)
         else:

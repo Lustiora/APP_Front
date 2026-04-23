@@ -44,3 +44,23 @@ class User:
             "left_food_count": 1,
             "left_intake": 25},
     }
+
+    pet_log = {
+        # pet_log_numeric_id : {category, log_status, log_date}
+        33:{"category":"급여량",
+            "log_status":"77",
+            "log_date":"2026-02-09 13:41:30.000"
+        },
+        66:{"category":"음수량",
+            "log_status":"13",
+            "log_date":"2026-02-09 15:41:30.000"
+        },
+        74:{"category":"급여량",
+            "log_status":"111",
+            "log_date":"2026-02-09 16:41:30.000"
+        },
+        904:{"category":"산책",
+            "log_status":"30",
+            "log_date":"2026-02-09 18:41:30.000"
+        },
+    }
