@@ -251,8 +251,7 @@ def pet_info_view(page):
         try: storage.set("pet_weight", e.control.value)
         except: pass
     pet_weight_field = dogdog.input_textfield(
-        hint_text="무게를 입력해주세요.", suffix="Kg", input_type="int", on_change=weight_event,
-        text_filter = ft.InputFilter(regex_string=r"^[0-9.]*$", replacement_string="")
+        hint_text="무게를 입력해주세요.", suffix="Kg", input_type="float", on_change=weight_event
     )
     if storage.get("pet_weight"):
         pet_weight_field.value = storage.get("pet_weight") # type: ignore

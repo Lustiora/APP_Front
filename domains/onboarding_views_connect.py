@@ -9,7 +9,7 @@ import components as dogdog
 class Api_push_Data:
     data = {}
 # -------------------------------------------------------------------------------------------------------
-def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None):
+def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback):
     # ---------------------------------------------------------------------------------------------------
     # Default Value
     # ---------------------------------------------------------------------------------------------------
@@ -31,10 +31,10 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
     if content_page == "/sign_up":
         async def sign_up_next(e):
             if storage.get("user_email") and storage.get("user_name") and storage.get("user_password"):
-                if not re.fullmatch(pattern=regex_email, string=storage("user_email")): # type: ignore
+                if not re.fullmatch(pattern=regex_email, string=storage.get("user_email")): # type: ignore
                     show_error(text="유효한 이메일 형식이 아닙니다.")
                     return
-                hash_pw = hashlib.sha256(storage("user_password").encode()).hexdigest() # type: ignore
+                hash_pw = hashlib.sha256(storage.get("user_password").encode()).hexdigest() # type: ignore
                 Api_push_Data.data.update({
                     "user_email": storage.get("user_email"), 
                     "user_name": storage.get("user_name"), 
@@ -42,7 +42,7 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
                 })
                 await focus_field.focus()
                 page.update()
-                change_page_callback("/sign_up_success") # type: ignore
+                change_page_callback("/pet_info")
             else:
                 show_error(text="이메일, 닉네임, 비밀번호를 모두 입력해주세요.")
                 return
@@ -58,16 +58,13 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
                 storage.get("pet_name") and
                 storage.get("pet_weight")):
                 if storage.get("pet_birth_day"):
-                    birth = str(storage.get("pet_birth_day")) # type: ignore
+                    birth = str(storage.get("pet_birth_day"))
                 elif storage.get("pet_age_year") and storage.get("pet_age_month"):
                     age_month = int(storage.get("pet_age_month").split()[0]) # type: ignore
                     age_year = int(storage.get("pet_age_year").split()[0]) # type: ignore
                     birth = str(date.today() - relativedelta(months=age_month, years=age_year))
                 else: 
                     show_error("생년월일을 선택해주세요.")
-                    return
-                if int(storage.get("pet_weight")) >= 120: # type: ignore
-                    show_error("정상적인 무게를 입력해주세요.")
                     return
                 try:
                     pet_weight_str = str(storage.get("pet_weight"))
@@ -104,13 +101,13 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
                 })
                 await focus_field.focus()
                 page.update()
-                change_page_callback("/pet_obesity") # type: ignore
+                change_page_callback("/pet_obesity")
             else:
                 show_error(text="이름, 품종, 생년월일, 성별, 무게를 모두 입력해주세요.")
                 return
         content = domains.pet_info_view(page=page)
         bottom = ft.Row(controls=[
-            dogdog.arrow_back(on_click=lambda e: change_page_callback("/sign_up")), # type: ignore
+            dogdog.arrow_back(on_click=lambda e: change_page_callback("/sign_up")),
             dogdog.continue_button(on_click=pet_info_next),
         ])
     # ---------------------------------------------------------------------------------------------------
@@ -118,13 +115,13 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
         def pet_obesity_next(e):
             if storage.get("body_score"):
                 Api_push_Data.data.update({"bcs": storage.get("body_score")})
-                change_page_callback("/pet_activity") # type: ignore
+                change_page_callback("/pet_activity")
             else:
                 show_error(text="체형을 선택해주세요.")
                 return
         content = domains.pet_obesity_view(page=page)
         bottom = ft.Row(controls=[
-            dogdog.arrow_back(on_click=lambda e: change_page_callback("/pet_info")), # type: ignore
+            dogdog.arrow_back(on_click=lambda e: change_page_callback("/pet_info")),
             dogdog.continue_button(on_click=pet_obesity_next),
         ])
     # ---------------------------------------------------------------------------------------------------
@@ -139,13 +136,13 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
                 })
                 await focus_field.focus()
                 page.update()
-                change_page_callback("/pet_health") # type: ignore
+                change_page_callback("/pet_health")
             else:
                 show_error(text="급여 시간(최소 1개)과 산책 시간을 선택해주세요.")
                 return
         content = domains.pet_activity_view(page=page)
         bottom = ft.Row(controls=[
-            dogdog.arrow_back(on_click=lambda e: change_page_callback("/pet_obesity")), # type: ignore
+            dogdog.arrow_back(on_click=lambda e: change_page_callback("/pet_obesity")),
             dogdog.continue_button(on_click=pet_activity_next),
         ])
     # ---------------------------------------------------------------------------------------------------
@@ -155,10 +152,10 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
             if storage.get("disease"): Api_push_Data.data.update({"disease": storage.get("disease")})
             await focus_field.focus()
             page.update()
-            change_page_callback("/pet_food") # type: ignore
+            change_page_callback("/pet_food")
         content = domains.pet_health_view(page=page)
         bottom = ft.Row(controls=[
-            dogdog.arrow_back(on_click=lambda e: change_page_callback("/pet_activity")), # type: ignore
+            dogdog.arrow_back(on_click=lambda e: change_page_callback("/pet_activity")),
             dogdog.continue_button(on_click=pet_health_next),
         ])
     # ---------------------------------------------------------------------------------------------------
@@ -177,23 +174,22 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback=None)
                 await focus_field.focus()
                 page.update()
                 try:
-                    await popop.show_open(e)
+                    await popop.show_api_insert_open(e)
                     storage.set("api_insert_data", Api_push_Data.data)
-                    print(f"Api_push_Data: {Api_push_Data.data}")
                     # -----------------------------------------------------------------------------------
-                    # API Insert
+                    # API Insert [page.session.store.get("api_insert_data")]
                     # -----------------------------------------------------------------------------------
-                    change_page_callback("/sign_up_success") # type: ignore
-                except Exception as e:
+                    change_page_callback("/sign_up_success")
+                except:
+                    await popop.show_api_insert_close(e)
                     show_error(text=f"서버에 접속할 수 없습니다.\n잠시 후 다시 시도해주세요.\n{e}")
-                    await popop.show_close(e)
             else:
                 show_error(text="현재 급여 중인 사료와 용량, 잔여량을 선택/입력해주세요.")
                 return
         content = domains.pet_food_view(page=page)
         bottom = ft.Row(controls=[
-            dogdog.arrow_back(on_click=lambda e: change_page_callback("/pet_health")), # type: ignore
-            dogdog.continue_button(on_click=pet_food_next), # type: ignore
+            dogdog.arrow_back(on_click=lambda e: change_page_callback("/pet_health")),
+            dogdog.continue_button(on_click=pet_food_next),
         ])
     # ---------------------------------------------------------------------------------------------------
     elif content_page == "/sign_up_success":

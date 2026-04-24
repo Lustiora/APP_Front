@@ -52,11 +52,11 @@ class Popup:
 
         page.overlay.append(self.bottom_sheet_popup) if self.bottom_sheet_popup in page.overlay else None
 
-    async def show_open(self, e):
+    async def show_api_insert_open(self, e):
         self.page.show_dialog(self.api_insert_dialog)
         self.page.update()
 
-    async def show_close(self, e):
+    async def show_api_insert_close(self, e):
         self.page.pop_dialog()
         self.page.update()
 
