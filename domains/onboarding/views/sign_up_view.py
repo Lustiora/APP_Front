@@ -34,6 +34,7 @@ def sign_up_view(page: ft.Page):
     # Sign Up Page
     # ---------------------------------------------------------------------------------------------------
     content_column = [
+        dogdog.basic_text(value="프로필을 완성하세요.", weight="bold", size=24),
         dogdog.basic_text(value="이메일", weight="bold"),
         email_input,
         ft.Container(height=10),

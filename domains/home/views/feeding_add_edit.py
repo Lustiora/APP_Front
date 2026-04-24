@@ -19,8 +19,7 @@ def feeding_add_edit(page: ft.Page, view):
     # Test Dialog
     # ---------------------------------------------------------------------------------------------------
     def show_error(text:str): page.show_dialog(
-                ft.SnackBar(content=ft.Text(value=text), open=True
-                , behavior=ft.SnackBarBehavior.FLOATING))
+        ft.SnackBar(content=ft.Text(value=text), open=True, behavior=ft.SnackBarBehavior.FLOATING))
     # ---------------------------------------------------------------------------------------------------
     # Input Field Change Event
     # ---------------------------------------------------------------------------------------------------
@@ -102,8 +101,6 @@ def feeding_add_edit(page: ft.Page, view):
                 on_click=lambda e, content="save": button_event(e, content))
         ]
         food_select_field.color = ft.Colors.BLACK
-        product_weight_field.hint_text = f"{feeding_data["total_weight"]}g"
-        product_weight_field.hint_style = ft.TextStyle(color=ft.Colors.BLACK)
     # ---------------------------------------------------------------------------------------------------
     elif view == "add":
         column_text = "신규 등록 사료"
