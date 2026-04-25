@@ -6,7 +6,28 @@ import domains
 def history_view(page: ft.Page):
     popup = dogdog.Popup(page)
     storage = page.session.store
-    if storage.get("select_log"): storage.remove("select_log")
+    now = datetime.datetime.now()
+    # if storage.get("select_log"): storage.remove("select_log")
+
+    if storage.get("select_log_date"):
+        date = storage.get("select_log_date")
+        view_date = storage.get("select_log_date")
+    elif storage.get("select_log_week"):
+        date = storage.get("select_log_week")
+        view_date = [
+            now.strftime("%Y.%m.%d"),
+            (now-datetime.timedelta(days=1)).strftime("%Y.%m.%d"),
+            (now-datetime.timedelta(days=2)).strftime("%Y.%m.%d"),
+            (now-datetime.timedelta(days=3)).strftime("%Y.%m.%d"),
+            (now-datetime.timedelta(days=4)).strftime("%Y.%m.%d"),
+            (now-datetime.timedelta(days=5)).strftime("%Y.%m.%d"),
+            (now-datetime.timedelta(days=6)).strftime("%Y.%m.%d"),
+        ]
+        storage.remove("select_log_week")
+    else:
+        date = now.strftime("%Y.%m.%d")
+        view_date = now.strftime("%Y.%m.%d")
+
     user_logs = storage.get("history")
 
     def insert_event(e):
@@ -38,7 +59,9 @@ def history_view(page: ft.Page):
     watering_log = []
     daily_work_log = []
     for pet_log_numeric_id , details in user_logs.items(): # type: ignore
-        # if details["log_date"].split()[0] == datetime.datetime.now().strftime("%Y-%m-%d"):
+        log_date = (details["log_date"].split()[0]).split("-")
+        view_log_date = f"{log_date[0]}.{log_date[1]}.{log_date[2]}"
+        if view_log_date in view_date: # type: ignore
             all_log.append(
                 dogdog.log_container(page, pet_log_numeric_id, details))
             if details["category"] == "급여량": 
@@ -102,7 +125,7 @@ def history_view(page: ft.Page):
             spacing=0,
             controls=[
                 ft.Row(margin=ft.margin.only(left=10, right=10, bottom=10), alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[
-                    dogdog.basic_text(datetime.datetime.now().strftime("%Y.%m.%d"), weight="bold", size=18),
+                    dogdog.basic_text(date, weight="bold", size=18), # type: ignore
                     insert_log
                 ]),
                 insert_grid,

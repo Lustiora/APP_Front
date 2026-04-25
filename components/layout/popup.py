@@ -18,13 +18,14 @@ class Popup:
         )
         page.overlay.append(self.event_popup) if self.event_popup in page.overlay else None
 
-        self.api_insert_dialog = ft.AlertDialog(
+        self.loading_dialog = ft.AlertDialog(
             modal=True,
+            open=False,
             bgcolor=ft.Colors.TRANSPARENT,
             content=ft.Row(alignment=ft.MainAxisAlignment.CENTER,
                 width=20, controls=[ft.ProgressRing(color=ft.Colors.BLUE_400)])
         )
-        page.overlay.append(self.api_insert_dialog) if self.api_insert_dialog in page.overlay else None
+        page.overlay.append(self.loading_dialog) if self.loading_dialog in page.overlay else None
 
         self.bottom_sheet_popup = ft.AlertDialog(
             alignment=ft.Alignment(0, 1),
@@ -52,11 +53,11 @@ class Popup:
 
         page.overlay.append(self.bottom_sheet_popup) if self.bottom_sheet_popup in page.overlay else None
 
-    async def show_api_insert_open(self, e):
-        self.page.show_dialog(self.api_insert_dialog)
+    async def show_loading_open(self, e):
+        self.page.show_dialog(self.loading_dialog)
         self.page.update()
 
-    async def show_api_insert_close(self, e):
+    async def show_loading_close(self, e):
         self.page.pop_dialog()
         self.page.update()
 
