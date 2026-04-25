@@ -174,14 +174,14 @@ def on_boarding_tile(page: ft.Page, content_page:str, change_page_callback):
                 await focus_field.focus()
                 page.update()
                 try:
-                    await popop.show_api_insert_open(e)
+                    await popop.show_loading_open(e)
                     storage.set("api_insert_data", Api_push_Data.data)
                     # -----------------------------------------------------------------------------------
                     # API Insert [page.session.store.get("api_insert_data")]
                     # -----------------------------------------------------------------------------------
                     change_page_callback("/sign_up_success")
                 except:
-                    await popop.show_api_insert_close(e)
+                    await popop.show_loading_close(e)
                     show_error(text=f"서버에 접속할 수 없습니다.\n잠시 후 다시 시도해주세요.\n{e}")
             else:
                 show_error(text="현재 급여 중인 사료와 용량, 잔여량을 선택/입력해주세요.")
