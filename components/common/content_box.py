@@ -20,8 +20,8 @@ def log_container(page: ft.Page, pet_log_numeric_id, details):
     # select_log.clear()
     # storage = page.session.store
     bgcolor = None
-    def click_test(e): pass
-        # content.bgcolor = ft.Colors.GREY_300 if content.bgcolor == None else None
+    def click_test(e):
+        content.bgcolor = ft.Colors.GREY_300 if content.bgcolor == None else None
         # if not select_log.get(pet_log_numeric_id):
         #     select_log.update({pet_log_numeric_id:pet_log_numeric_id})
         # else: select_log.pop(pet_log_numeric_id,None)

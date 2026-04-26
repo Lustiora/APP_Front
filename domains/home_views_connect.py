@@ -85,6 +85,14 @@ def home_tile(page: ft.Page, popup, content_page:str, change_page_callback=None)
     elif content_page == "/notification":
         home_background , top_banner = dogdog.home_layout(page=page, text="알림")
         main_container_content.append(top_banner)
+        main_container_content.append(body_scroll_column)
+        body_scroll_column.controls.append(domains.notification.notification_dummy(page))
+    # ---------------------------------------------------------------------------------------------------
+    elif content_page == "/notification_setting":
+        home_background , top_banner = dogdog.home_layout(page=page, text="알림 설정")
+        main_container_content.append(top_banner)
+        main_container_content.append(body_scroll_column)
+        body_scroll_column.controls.append(domains.notification.notification_setting(page))
     # ---------------------------------------------------------------------------------------------------
     elif content_page == "/what_bowel_score":
         home_background , top_banner = dogdog.home_layout(page=page, text="배변 스코어란?")

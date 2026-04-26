@@ -7,7 +7,7 @@ import flet_charts as fch
 
 import components as dogdog
 from components.common.jun_layout_tokens import (
-    CONTENT_WIDTH,
+    # CONTENT_WIDTH,
     SECTION_GAP,
     CALENDAR_RADIUS,
     FILTER_BOX_RADIUS,
@@ -36,7 +36,7 @@ from components.common.jun_colors import (
 # ✅ 고정값 상수
 # ============================================================
 CALENDAR_CELL_WIDTH = 36
-CHART_WIDTH = 290
+# CHART_WIDTH = 290
 CHART_HEIGHT = 240
 CHART_MAX_Y = 8
 
@@ -84,28 +84,28 @@ def log_view(page: ft.Page):
 
     calendar_container = ft.Container()
     detail_banner_area = ft.Container()
-    chart_container = ft.Container()
+    chart_container = ft.Container(padding=20)
     metric_selector_container = ft.Container()
 
     chart_data_map = {
         "급여량": [
-            ("Mon", 2.8),
-            ("Tue", 3.0),
-            ("Wed", 3.4),
-            ("Thu", 3.1),
-            ("Fri", 3.6),
-            ("Sat", 3.8),
-            ("Sun", 3.3),
+            ("월요일", 2.8),
+            ("화요일", 3.0),
+            ("수요일", 3.4),
+            ("목요일", 3.1),
+            ("금요일", 3.6),
+            ("토요일", 3.8),
+            ("일요일", 3.3),
         ],
         "음수량": [],
         "몸무게": [
-            ("Mon", 2.2),
-            ("Tue", 2.3),
-            ("Wed", 4.2),
-            ("Thu", 2.0),
-            ("Fri", 5.0),
-            ("Sat", 6.2),
-            ("Sun", 3.9),
+            ("월요일", 2.2),
+            ("화요일", 2.3),
+            ("수요일", 4.2),
+            ("목요일", 2.0),
+            ("금요일", 5.0),
+            ("토요일", 6.2),
+            ("일요일", 3.9),
         ],
     }
 
@@ -258,7 +258,7 @@ def log_view(page: ft.Page):
     def refresh_calendar():
         cal = calendar.Calendar(firstweekday=6)
         month_days = cal.monthdayscalendar(current_year, current_month)
-        calendar_width = CALENDAR_CELL_WIDTH * 7
+        calendar_width = float('inf') * 7
 
         week_rows = [
             ft.Row(
@@ -271,7 +271,7 @@ def log_view(page: ft.Page):
         ]
 
         calendar_container.content = ft.Container(
-            width=CONTENT_WIDTH,
+            # width=CONTENT_WIDTH,
             bgcolor=SURFACE_WHITE,
             border_radius=CALENDAR_RADIUS,
             padding=ft.padding.only(left=14, right=14, top=18, bottom=18),
@@ -362,7 +362,7 @@ def log_view(page: ft.Page):
 
         if not chart_data:
             return ft.Container(
-                width=CHART_WIDTH,
+                # width=CHART_WIDTH,
                 height=CHART_HEIGHT,
                 alignment=ft.Alignment(0, 0),
                 content=dogdog.Txt(
@@ -387,7 +387,7 @@ def log_view(page: ft.Page):
                         size=13,
                         color=TEXT_TERTIARY,
                         weight=ft.FontWeight.W_500,
-                    ),
+                    )
                 )
             )
 
@@ -403,7 +403,7 @@ def log_view(page: ft.Page):
             if i in highlight_indexes:
                 highlight_points.append(fch.LineChartDataPoint(i, value))
 
-        return fch.LineChart(
+        case = fch.LineChart(
             data_series=[
                 fch.LineChartData(
                     points=normal_points,
@@ -423,7 +423,7 @@ def log_view(page: ft.Page):
             max_x=len(chart_data) - 1,
             min_y=0,
             max_y=CHART_MAX_Y,
-            width=CHART_WIDTH,
+            # width=CHART_WIDTH,
             height=CHART_HEIGHT,
             interactive=True,
             border=ft.border.all(0, ft.Colors.TRANSPARENT),
@@ -433,6 +433,7 @@ def log_view(page: ft.Page):
             ),
             bottom_axis=fch.ChartAxis(
                 labels=bottom_labels,
+                label_spacing=1,
                 label_size=36,
             ),
             horizontal_grid_lines=fch.ChartGridLines(
@@ -445,7 +446,9 @@ def log_view(page: ft.Page):
                 color=ft.Colors.TRANSPARENT,
                 width=0,
             ),
-        )
+        )        
+
+        return case
 
     # ============================================================
     # ✅ 화면 섹션 함수
@@ -475,7 +478,7 @@ def log_view(page: ft.Page):
 
     def dog_stat_card_section():
         return ft.Container(
-            width=CONTENT_WIDTH,
+            # width=CONTENT_WIDTH,
             bgcolor=CARD_BG_COLOR,
             border=ft.border.all(1, CARD_BORDER_COLOR),
             border_radius=STAT_CARD_RADIUS,
