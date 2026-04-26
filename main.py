@@ -9,7 +9,7 @@ test_page = ""
 # Mobile Platform
 # flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a
 # -------------------------------------------------------------------------------------------------------
-test_page = "Browser" # APP Build Test 시 주석 처리
+# test_page = "Browser" # APP Build Test 시 주석 처리
 # -------------------------------------------------------------------------------------------------------
 class Front_dogdog:
     def __init__(self, page: ft.Page, popup):
@@ -64,7 +64,7 @@ class Front_dogdog:
     def on_route_change(self, e):
         # print(len(self.page.views))
         route = e.route
-        self.page.overlay.clear()
+        # self.page.overlay.clear()
         if len(self.page.views) > 1 and self.page.views[-2].route == route and route != "/history":
             self.page.views.pop()
         elif len(self.page.views) == 0 or self.page.views[-1].route != route:

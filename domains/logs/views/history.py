@@ -7,11 +7,10 @@ def history_view(page: ft.Page):
     popup = dogdog.Popup(page)
     storage = page.session.store
     now = datetime.datetime.now()
-    # if storage.get("select_log"): storage.remove("select_log")
-
     if storage.get("select_log_date"):
         date = storage.get("select_log_date")
         view_date = storage.get("select_log_date")
+        storage.remove("select_log_date")
     elif storage.get("select_log_week"):
         date = storage.get("select_log_week")
         view_date = [
@@ -52,8 +51,6 @@ def history_view(page: ft.Page):
     insert_grid = domains.grid.status_update_menu(page=page)
     insert_grid.visible = False
     insert_grid.margin = ft.margin.only(bottom=10)
-
-    storage = page.session.store
     all_log = []
     feeding_log = []
     watering_log = []

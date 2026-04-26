@@ -111,7 +111,7 @@ class StatusController:
                 self.popup.show_popup_open(e=e, case="event_popup", title=call_title, text=call_message)
                 return
             if self.storage.get(f"{call}_memo"):
-                event_text.update({f"{call}_memo":self.storage.get("customer_food_id")})
+                event_text.update({f"{call}_memo":self.storage.get(f"{call}_memo")})
             else:
                 if call == "status_log":
                     self.popup.show_popup_open(e=e, case="event_popup", title=call_title, text=call_message)
@@ -136,6 +136,9 @@ class StatusController:
             ]))
         else: self.bottom_sheet_contents.append(dogdog.basic_text(value=text, size=25, weight="bold"))
         self.bottom_sheet_contents.append(ft.Divider())
+    def guide_page_go(self, e, route):
+        self.grid_bottom_sheet.open = False
+        self.page.go("/what_bowel_score") if route =="bowel" else self.page.go("/what_bcs")
 # -------------------------------------------------------------------------------------------------------
 def bottom_sheet(e, page: ft.Page, call):
     # ---------------------------------------------------------------------------------------------------
@@ -273,14 +276,13 @@ def bottom_sheet(e, page: ft.Page, call):
         s_control.bottom_sheet_contents.append(daily_walks_memo)
     # ---------------------------------------------------------------------------------------------------
     elif call == "hygiene_bowel":
-        s_control.bottom_sheet_title("위생/배변", lambda _:page.go("/what_bowel_score"))
+        s_control.bottom_sheet_title("위생/배변", lambda e=e, route="bowel":s_control.guide_page_go(e, route))
         hygiene_bowel_score = dogdog.dropdown_menu(
             label="배변 스코어를 선택해주세요.", options=[], 
             event=lambda e, change=f"{call}_weight": s_control.change_event(e, change)
         )
         hygiene_bowel_score.options = [dogdog.dropdown_menu_option(text=f"{row}") for row in range(1,8)]
         if storage.get(f"{call}_weight"): storage.remove(f"{call}_weight")
-        
         hygiene_bowel_memo = dogdog.input_textfield(
             hint_text="메모 (선택)", text_filter=None, max_length=None, # type: ignore
             on_change=lambda e, change=f"{call}_memo": s_control.change_event(e, change))
@@ -290,18 +292,20 @@ def bottom_sheet(e, page: ft.Page, call):
         s_control.bottom_sheet_contents.append(hygiene_bowel_memo)
     # ---------------------------------------------------------------------------------------------------
     elif call == "health_log":
-        s_control.bottom_sheet_title("건강기록", lambda _:page.go("/what_bcs"))
+        s_control.bottom_sheet_title("건강기록", lambda e=e, route="bcs":s_control.guide_page_go(e, route))
         health_log = dogdog.input_textfield(
             hint_text="몸무게를 적어주세요.", input_type="float", suffix="Kg", 
             on_change=lambda e, change=f"{call}_float_weight": s_control.change_event(e, change))
         if storage.get(f"{call}_float_weight"): storage.remove(f"{call}_float_weight")
-        health_bcs_log = dogdog.input_textfield(
-            hint_text="BCS를 적어주세요.", input_type="int", suffix="1 ~ 7", 
-            on_change=lambda e, change=f"{call}_bcs_weight": s_control.change_event(e, change))
+        health_bcs = dogdog.dropdown_menu(
+            label="BCS를 선택해주세요.", options=[], 
+            event=lambda e, change=f"{call}_bcs_weight": s_control.change_event(e, change)
+        )
+        health_bcs.options = [dogdog.dropdown_menu_option(text=f"{row}") for row in range(1,8)]
         if storage.get(f"{call}_bcs_weight"): storage.remove(f"{call}_bcs_weight")
         # -----------------------------------------------------------------------------------------------
         s_control.bottom_sheet_contents.append(health_log)
-        s_control.bottom_sheet_contents.append(health_bcs_log)
+        s_control.bottom_sheet_contents.append(health_bcs)
     # ---------------------------------------------------------------------------------------------------
     elif call == "status_log":
         s_control.bottom_sheet_title("상태기록")

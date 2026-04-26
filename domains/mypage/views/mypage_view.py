@@ -102,7 +102,7 @@ def mypage_view(page: ft.Page):
     def build_banners():
         return [
             dogdog.banner(
-                image_src="대추.jpg",
+                # image_src="대추.jpg",
                 text="내 반려동물 정보",
                 selected=(selected_banner["index"] == 0),
                 on_click=select_banner(0),
@@ -128,7 +128,7 @@ def mypage_view(page: ft.Page):
             controls.append(ft.Container(height=6))
 
         return ft.Column(
-            spacing=4,
+            spacing=0,
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=controls
