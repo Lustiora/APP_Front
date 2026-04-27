@@ -3,21 +3,21 @@ import flet as ft
 import domains
 import components as dogdog
 from api.user_data import User
-
+# -------------------------------------------------------------------------------------------------------
 test_page = ""
 # -------------------------------------------------------------------------------------------------------
 # Mobile Platform
 # flet build apk --verbose --compile-app --compile-packages --arch arm64-v8a
 # -------------------------------------------------------------------------------------------------------
-# test_page = "Browser" # APP Build Test 시 주석 처리
+test_page = "Browser" # APP Build Test 시 주석 처리
 # -------------------------------------------------------------------------------------------------------
 class Front_dogdog:
-    def __init__(self, page: ft.Page, popup):
+    def __init__(self, page: ft.Page):
         # -----------------------------------------------------------------------------------------------
         # Default Page Value
         # -----------------------------------------------------------------------------------------------
         self.page = page
-        self.popup = popup
+        self.popup = dogdog.Popup(page)
         self.storage = page.session.store
         page.title = "Dog Dog"
         page.theme_mode = ft.ThemeMode.LIGHT
@@ -55,7 +55,7 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        target_route = "/home" if self.is_onboarding_complete else "/sign_up"
+        target_route = "/home" if self.is_onboarding_complete else "/pet_food"
         if self.page.route == target_route: self.routing_view(page_name=target_route)
         else: page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class Front_dogdog:
         ]
         if self.is_onboarding_complete == False:
             basic_content, focus_field = domains.on_boarding_tile(
-                page=self.page, content_page=page_name, change_page_callback=self.page.go
+                page=self.page, popup=self.popup, content_page=page_name, change_page_callback=self.page.go
             )
             async def view_click(e): 
                 if focus_field: await focus_field.focus()
@@ -134,8 +134,7 @@ class Front_dogdog:
         self.page.views.append(new_view)
 # -------------------------------------------------------------------------------------------------------
 async def main(page: ft.Page): 
-    popup = dogdog.Popup(page)
-    front_end = Front_dogdog(page=page, popup=popup)
+    front_end = Front_dogdog(page=page)
     if page.platform == ft.PagePlatform.ANDROID:
         await page.set_allowed_device_orientations([ft.DeviceOrientation.PORTRAIT_UP])
 # -------------------------------------------------------------------------------------------------------
