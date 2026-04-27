@@ -1,0 +1,32 @@
+main.py					O
+domains:.				O
+│  home_views_connect.py		O
+│  onboarding_views_connect.py	O
+│
+├─home
+│  └─views
+│          feeding.py			O
+│          guide.py			O
+│          home.py			O
+│
+├─logs
+│  └─views
+│          grid.py
+│          history.py
+│          log.py
+│
+├─mypage
+│  └─views
+│          mypage_view.py
+│          notification.py
+│
+└─onboarding
+     └─views
+             pet_activity_view.py
+             pet_food_view.py
+             pet_health_view.py
+             pet_info_view.py
+             pet_obesity_view.py
+             sign_in_oauth.py
+             sign_up_success_view.py
+             sign_up_view.py
