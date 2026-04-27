@@ -48,7 +48,7 @@ def history_view(page: ft.Page):
         )
     )
 
-    insert_grid = domains.grid.status_update_menu(page=page)
+    insert_grid = domains.grid.status_update_menu(page=page, popup=popup)
     insert_grid.visible = False
     insert_grid.margin = ft.margin.only(bottom=10)
     all_log = []
@@ -90,15 +90,34 @@ def history_view(page: ft.Page):
             storage.remove("select_log")
     
     def setting_content(visible):
+        delete_popup = popup.event_popup
+        delete_popup.title = dogdog.basic_text("오늘의 기록")
+        delete_popup.content = dogdog.basic_text("선택하신 기록을 삭제하시겠습니까?")
+        delete_popup.actions = [
+            ft.TextButton("네", on_click=lambda e: delete_popup_close(e, options=True)),
+            ft.TextButton("아니요", on_click=lambda e: delete_popup_close(e))
+        ]
+
+        def delete_popup_close(e, options=None):
+            delete_popup.open = False
+            if options: print(e)
+            page.update()
+
+        def history_delete(e):
+            if delete_popup not in page.overlay:
+                page.overlay.append(delete_popup)
+            else:
+                page.overlay.clear()
+                page.overlay.append(delete_popup)
+            delete_popup.open = True
+            page.update()
+
         return ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 dogdog.flat_button(
                     "삭제", disabled=False, scale=1, visible=visible,
-                    on_click=lambda e:popup.show_popup_open(
-                        e, case="event_popup", title="오늘의 기록", text="선택하신 기록을 삭제하시겠습니까?", focus=False,
-                        on_click=lambda e:delete_popup(e)
-                    )),
+                    on_click=lambda e:history_delete(e)),
                 dogdog.flat_button(
                     "수정", disabled=False, scale=1, bgcolor="#FEF3B9", visible=visible, # type: ignore
                     on_click=None),

@@ -2,24 +2,33 @@
 import flet as ft
 import components as dogdog
 import datetime
+import domains
 # -------------------------------------------------------------------------------------------------------
 class StatusController:
-    def __init__(self, page: ft.Page):
+    def __init__(self, page: ft.Page, popup):
         # -----------------------------------------------------------------------------------------------
         # Default Value
         # -----------------------------------------------------------------------------------------------
         self.page = page
+        self.popup = popup
         self.storage = page.session.store
-        self.popup = dogdog.Popup(page=page)
         self.popup.event_popup.actions[0] = ft.Row()
         self.popup.event_popup.actions[1].content = "닫기" # type: ignore
         self.popup.event_popup.modal = False
         if self.storage.get("customer_food_id"): self.storage.remove("customer_food_id")
         # -----------------------------------------------------------------------------------------------
-        # Bottom Sheet
+        # Popup Bottom Sheet
         # -----------------------------------------------------------------------------------------------
         self.grid_bottom_sheet = self.popup.bottom_sheet_popup
-        self.bottom_sheet_contents = self.grid_bottom_sheet.content.content.controls # type: ignore
+        self.bottom_sheet_contents = self.popup.bottom_sheet_controls
+        self.bottom_sheet_contents.clear()
+        # -----------------------------------------------------------------------------------------------
+        # Guide Bottom Sheet
+        # -----------------------------------------------------------------------------------------------
+        self.guide_bottom_sheet_content = []
+        self.guide_page = dogdog.bottom_sheet(content=self.guide_bottom_sheet_content)
+        # -----------------------------------------------------------------------------------------------
+        # Date Picker
         # -----------------------------------------------------------------------------------------------
         self.date_picker = ft.DatePicker(
             first_date=datetime.datetime.now() - datetime.timedelta(days=7),
@@ -30,6 +39,8 @@ class StatusController:
             ft.Icons.CALENDAR_MONTH, datetime.datetime.now().strftime("%Y.%m.%d")
         )
         self.data_button.on_click = lambda e, picker=self.date_picker: self.open_event(e, picker)
+        # -----------------------------------------------------------------------------------------------
+        # Time Picker
         # -----------------------------------------------------------------------------------------------
         self.time_picker = ft.TimePicker(
             entry_mode=ft.TimePickerEntryMode.DIAL_ONLY)
@@ -136,16 +147,31 @@ class StatusController:
             ]))
         else: self.bottom_sheet_contents.append(dogdog.basic_text(value=text, size=25, weight="bold"))
         self.bottom_sheet_contents.append(ft.Divider())
-    def guide_page_go(self, e, route):
-        self.grid_bottom_sheet.open = False
-        self.page.go("/what_bowel_score") if route =="bowel" else self.page.go("/what_bcs")
+    # ---------------------------------------------------------------------------------------------------
+    # Guide Bottom Sheet Event
+    # ---------------------------------------------------------------------------------------------------
+    def guide_bottom_sheet(self, e, route):
+        def guide_close(e):
+            self.guide_page.open = False
+        if self.guide_page not in self.page.overlay:
+            self.page.overlay.append(self.guide_page)
+        self.guide_bottom_sheet_content.clear()
+        self.guide_bottom_sheet_content.append(
+            ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[dogdog.basic_text(
+                f"{"배변 스코어란?" if route == "bowel" else "BCS 란?"}", size=25, weight="bold"),
+                dogdog.flat_button("닫기", on_click=lambda e:guide_close(e), disabled=False)]))
+        self.guide_bottom_sheet_content.append(ft.Divider())
+        self.guide_bottom_sheet_content.append(
+            ft.Column(expand=True, scroll=ft.ScrollMode.HIDDEN, 
+                controls=[domains.guide.what_guide(page=self.page, content=route)]))
+        self.guide_page.open = True
 # -------------------------------------------------------------------------------------------------------
-def bottom_sheet(e, page: ft.Page, call):
+def bottom_sheet(e, page: ft.Page, popup, call):
     # ---------------------------------------------------------------------------------------------------
     # Default Value
     # ---------------------------------------------------------------------------------------------------
     storage = page.session.store
-    s_control = StatusController(page=page)
+    s_control = StatusController(page=page, popup=popup)
     customer_detail = storage.get("customer_detail")
     is_customer_detail = True
     # ---------------------------------------------------------------------------------------------------
@@ -168,8 +194,6 @@ def bottom_sheet(e, page: ft.Page, call):
         s_control.time_picker.on_change=lambda e, change=f"{call}_time", case=s_control.time_button: s_control.change_event(e, change, case)
         storage.set(f"{call}_time", datetime.datetime.now().strftime("%H:%M"))
         return ft.Row(spacing=30, alignment=ft.MainAxisAlignment.CENTER, controls=[s_control.data_button, s_control.time_button])
-    # ---------------------------------------------------------------------------------------------------    
-    s_control.bottom_sheet_contents.clear()
     # ---------------------------------------------------------------------------------------------------
     if call == "feeding":
         s_control.bottom_sheet_title("밥주기")
@@ -276,7 +300,7 @@ def bottom_sheet(e, page: ft.Page, call):
         s_control.bottom_sheet_contents.append(daily_walks_memo)
     # ---------------------------------------------------------------------------------------------------
     elif call == "hygiene_bowel":
-        s_control.bottom_sheet_title("위생/배변", lambda e=e, route="bowel":s_control.guide_page_go(e, route))
+        s_control.bottom_sheet_title("위생/배변", lambda e=e, route="bowel":s_control.guide_bottom_sheet(e, route))
         hygiene_bowel_score = dogdog.dropdown_menu(
             label="배변 스코어를 선택해주세요.", options=[], 
             event=lambda e, change=f"{call}_weight": s_control.change_event(e, change)
@@ -292,7 +316,7 @@ def bottom_sheet(e, page: ft.Page, call):
         s_control.bottom_sheet_contents.append(hygiene_bowel_memo)
     # ---------------------------------------------------------------------------------------------------
     elif call == "health_log":
-        s_control.bottom_sheet_title("건강기록", lambda e=e, route="bcs":s_control.guide_page_go(e, route))
+        s_control.bottom_sheet_title("건강기록", lambda e=e, route="bcs":s_control.guide_bottom_sheet(e, route))
         health_log = dogdog.input_textfield(
             hint_text="몸무게를 적어주세요.", input_type="float", suffix="Kg", 
             on_change=lambda e, change=f"{call}_float_weight": s_control.change_event(e, change))
@@ -301,7 +325,7 @@ def bottom_sheet(e, page: ft.Page, call):
             label="BCS를 선택해주세요.", options=[], 
             event=lambda e, change=f"{call}_bcs_weight": s_control.change_event(e, change)
         )
-        health_bcs.options = [dogdog.dropdown_menu_option(text=f"{row}") for row in range(1,8)]
+        health_bcs.options = [dogdog.dropdown_menu_option(text=f"{row}") for row in range(9, 0, -1)]
         if storage.get(f"{call}_bcs_weight"): storage.remove(f"{call}_bcs_weight")
         # -----------------------------------------------------------------------------------------------
         s_control.bottom_sheet_contents.append(health_log)
@@ -334,19 +358,19 @@ def bottom_sheet(e, page: ft.Page, call):
     s_control.grid_bottom_sheet.open = True
     page.update()
 # -------------------------------------------------------------------------------------------------------
-def status_update_menu(page :ft.Page):
+def status_update_menu(page :ft.Page, popup):
     # ---------------------------------------------------------------------------------------------------
     # Default Value
     # ---------------------------------------------------------------------------------------------------
     content_list_top = [
-        ("밥주기", "dogbowl.png", lambda e, call="feeding":bottom_sheet(e, page, call)),
-        ("물주기", "waterdrop.png", lambda e, call="watering":bottom_sheet(e, page, call)),
-        ("활동기록", "dogwalking.png", lambda e, call="daily_walks":bottom_sheet(e, page, call)),
+        ("밥주기", "dogbowl.png", lambda e, call="feeding":bottom_sheet(e, page, popup, call)),
+        ("물주기", "waterdrop.png", lambda e, call="watering":bottom_sheet(e, page, popup, call)),
+        ("활동기록", "dogwalking.png", lambda e, call="daily_walks":bottom_sheet(e, page, popup, call)),
     ]
     content_list_bottom = [
-        ("위생/배변", "poop.png", lambda e, call="hygiene_bowel":bottom_sheet(e, page, call)),
-        ("건강기록", "injection.png", lambda e, call="health_log":bottom_sheet(e, page, call)),
-        ("상태기록", "note.png", lambda e, call="status_log":bottom_sheet(e, page, call)),
+        ("위생/배변", "poop.png", lambda e, call="hygiene_bowel":bottom_sheet(e, page, popup, call)),
+        ("건강기록", "injection.png", lambda e, call="health_log":bottom_sheet(e, page, popup, call)),
+        ("상태기록", "note.png", lambda e, call="status_log":bottom_sheet(e, page, popup, call)),
     ]
     # ---------------------------------------------------------------------------------------------------
     content_column = [
