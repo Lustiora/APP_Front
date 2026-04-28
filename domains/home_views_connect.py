@@ -31,8 +31,7 @@ def home_tile(page: ft.Page, popup, content_page:str, change_page_callback=None)
         body_scroll_column.controls.append(
             dogdog.content_container(
                 content_list=domains.home.feeding_food_count(page=page, content_page=content_page),
-                on_click=lambda e:appbar_on_change(e, "/feeding")
-        ))
+                on_click=lambda e:appbar_on_change(e, "/feeding")))
         body_scroll_column.controls.append(domains.grid.status_update_menu(page=page, popup=popup))
     # ---------------------------------------------------------------------------------------------------
     elif content_page == "/log":
@@ -50,8 +49,7 @@ def home_tile(page: ft.Page, popup, content_page:str, change_page_callback=None)
         body_scroll_column.controls.append(
             dogdog.content_container(
                 content_list=domains.home.feeding_food_count(page=page, content_page=content_page),
-                on_click=lambda e:appbar_on_change(e, "/feeding")
-        ))
+                on_click=lambda e:appbar_on_change(e, "/feeding")))
         body_scroll_column.controls.append(domains.shop.product_guide(page=page))
     # ---------------------------------------------------------------------------------------------------
     elif content_page == "/contents":
