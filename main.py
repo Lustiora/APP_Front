@@ -55,7 +55,7 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        target_route = "/shop" if self.is_onboarding_complete else "/sign_up"
+        target_route = "/shop/product/14" if self.is_onboarding_complete else "/sign_up"
         if self.page.route == target_route: self.routing_view(page_name=target_route)
         else: page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ class Front_dogdog:
             # Icon , Text , On_click
             (ft.Icons.HOME, "Home", lambda _:self.page.go("/home")),
             (ft.Icons.CALENDAR_MONTH, "Log", lambda _:self.page.go("/log")),
-            ("skeleton.png" if page_name != "/shop" else "shop.png", None, lambda _:self.page.go("/shop")),
+            ("skeleton.png" if not "/shop" in page_name else "shop.png", None, lambda _:self.page.go("/shop")),
             (ft.Icons.MESSENGER_OUTLINE_ROUNDED, "Contents", lambda _:self.page.go("/contents")),
             (ft.Icons.PERSON_OUTLINE, "MyPage", lambda _:self.page.go("/mypage")),
         ]
