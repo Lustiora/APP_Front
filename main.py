@@ -55,7 +55,7 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        target_route = "/shop/product/14" if self.is_onboarding_complete else "/sign_up"
+        target_route = "/shop/product/144" if self.is_onboarding_complete else "/sign_up"
         if self.page.route == target_route: self.routing_view(page_name=target_route)
         else: page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
@@ -130,7 +130,8 @@ class Front_dogdog:
             new_view = ft.View(
                 route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
             )
-            new_view.bottom_appbar = dogdog.home_bottom_appbar(appbar_status, page_name)
+            if not "/shop/" in page_name:
+                new_view.bottom_appbar = dogdog.home_bottom_appbar(appbar_status, page_name)
         self.page.views.append(new_view)
 # -------------------------------------------------------------------------------------------------------
 async def main(page: ft.Page): 

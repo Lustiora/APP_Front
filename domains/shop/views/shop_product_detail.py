@@ -2,58 +2,156 @@
 import flet as ft
 import components as dogdog
 # -------------------------------------------------------------------------------------------------------
-def shop_product_detail(page: ft.Page, content_page):
+class Default_data:
+    def __init__(self, page, popup, content_page,):
+        # -----------------------------------------------------------------------------------------------
+        from api.product_guide import Product
+        # -----------------------------------------------------------------------------------------------
+        # Default Value
+        # -----------------------------------------------------------------------------------------------
+        self.Product = Product
+        self.popup = popup
+        self.page = page
+        self.header_width = page.width / 3 # type: ignore
+        self.product_id = int(content_page.strip("/shop/product/"))
+        # print(f"product_id: {self.product_id}")
+        self.is_detail_page = False
+        for p_id , p_d in self.Product.guide_product_list.items():
+            if p_id == self.product_id:
+                self.p_thumbnail = p_d["thumbnail"]
+                self.p_brand = p_d["brand"]
+                self.p_name = p_d["product_name"]
+                self.p_price = int(p_d["sales_price"])
+                self.is_detail_page = True
+                break
+        self.default_bottom_sheet = popup.bottom_sheet_popup
+        self.default_bottom_sheet_content = popup.bottom_sheet_controls
+        self.message = {
+            "cart":"원 장바구니 담기",
+            "order":"원 바로 구매",
+            "subs_order":"원 똑똑 배송으로 주문하기 🔔"
+        }
     # ---------------------------------------------------------------------------------------------------
-    from api.product_guide import Product
+    # Button Bottom Sheet
+    # ---------------------------------------------------------------------------------------------------
+    def bottom_sheet_open(self, e, key):
+        self.bt_order_count_value = 1
+        bt_product_price = dogdog.basic_text(spans=[
+            ft.TextSpan(f"{self.p_price:,}원\n"),
+            ft.TextSpan(f"똑똑 배송 적용가: {int(self.p_price*0.9):,}원",
+                style=dogdog.TextStyle(size=12, color="#E6001A")) # type: ignore
+            ], weight="bold", color=ft.Colors.GREY_700)
+        self.order_price = int(self.p_price*0.9) if key == "subs_order" else self.p_price
+        self.default_bottom_sheet_content.clear()
+        print(f"{key}: {self.product_id}")
+        bt_product_name = dogdog.basic_text(
+            f"[{self.p_brand}] {self.p_name}", weight="bold", color=ft.Colors.GREY_700)
+        bt_product_name.expand = True
+        bt_product_name.overflow = ft.TextOverflow.ELLIPSIS
+        bt_product_explanation = dogdog.basic_text(
+            "상품 설명", size=12, color=ft.Colors.GREY_600)
+        bt_product_explanation.max_lines = 2
+        bt_product_explanation.expand = True
+        bt_product_explanation.overflow = ft.TextOverflow.ELLIPSIS
+        bt_product_header = ft.Row(vertical_alignment=ft.CrossAxisAlignment.START, controls=[
+            ft.Container(width=60, height=60, image=ft.DecorationImage(src=self.p_thumbnail)),
+            ft.Column(spacing=0, expand=True, controls=[bt_product_name, bt_product_explanation])
+        ])
+        self.bt_order_count_input = dogdog.basic_text(str(self.bt_order_count_value))
+        self.bt_order_count = ft.Container(
+            content=ft.Row(vertical_alignment=ft.CrossAxisAlignment.CENTER, controls=[
+                ft.IconButton(
+                icon=ft.Icons.ARROW_BACK_IOS, icon_size=10, 
+                on_click=lambda e:self.order_count_event(e, "back", key)),
+                self.bt_order_count_input,
+                ft.IconButton(
+                icon=ft.Icons.ARROW_FORWARD_IOS, icon_size=10, 
+                on_click=lambda e:self.order_count_event(e, "forward", key)),
+        ]))
+        bt_product_main = ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[
+            bt_product_price,
+            self.bt_order_count
+        ])
+        self.bt_product_bottom = dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
+            text=None, size=16, text_color=ft.Colors.WHITE, expand=True,
+            on_click=(lambda _:self.page.go(f"/shop/{key}")) if not key == "cart" else None
+        )
+        # -----------------------------------------------------------------------------------------------
+        self.bt_button = self.bt_product_bottom.content
+        self.bt_button.value = f"{self.order_price:,}{self.message[key]}" # type: ignore
+        if key == "subs_order": # page.go("/shop/order/subs")
+            self.bt_product_bottom.bgcolor = "#E6001A" # type: ignore
+            self.bt_button.color = ft.Colors.WHITE # type: ignore
+            self.bt_button.value = f"🔔 {self.order_price:,}{self.message[key]}" # type: ignore
+        # -----------------------------------------------------------------------------------------------
+        self.default_bottom_sheet_content.append(bt_product_header)
+        self.default_bottom_sheet_content.append(ft.Divider())
+        self.default_bottom_sheet_content.append(bt_product_main)
+        self.default_bottom_sheet_content.append(self.bt_product_bottom)
+        # -----------------------------------------------------------------------------------------------        
+        if self.default_bottom_sheet not in self.page.overlay:
+            self.page.overlay.append(self.default_bottom_sheet)
+        else:
+            self.page.overlay.clear()
+            self.page.overlay.append(self.default_bottom_sheet)
+        self.default_bottom_sheet.open = True
+        self.page.update()
+    # ---------------------------------------------------------------------------------------------------
+    # Order Count Event
+    # ---------------------------------------------------------------------------------------------------
+    def order_count_event(self, e, value, key):
+        count = self.bt_order_count_value
+        if value == "back":
+            if count > 1: self.bt_order_count_value = count - 1
+        elif value == "forward":
+            if count < 99: self.bt_order_count_value = count + 1
+        self.bt_button.value = f"{self.order_price * self.bt_order_count_value:,}{self.message[key]}" # type: ignore
+        if key == "subs_order": # page.go("/shop/order/subs")
+            self.bt_button.value = "🔔 " + self.bt_button.value # type: ignore
+        self.bt_order_count_input.value = str(self.bt_order_count_value)
+        self.bt_order_count.update()
+        self.bt_product_bottom.update()
+# -------------------------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------------------------
+def shop_product_detail(page: ft.Page, popup, content_page):
     # ---------------------------------------------------------------------------------------------------
     # Default Value
     # ---------------------------------------------------------------------------------------------------
-    header_width = page.width / 3 # type: ignore
-    product_id = int(content_page.strip("/shop/product/"))
-    # print(f"product_id: {product_id}")
+    dd = Default_data(page, popup, content_page)
     content_column = []
-    is_detail_page = False
-    for p_id , p_d in Product.guide_product_list.items():
-        if p_id == product_id:
-            p_thumbnail = p_d["thumbnail"]
-            p_brand = p_d["brand"]
-            p_name = p_d["product_name"]
-            p_price = int(p_d["sales_price"])
-            is_detail_page = True
-            break
-    # ---------------------------------------------------------------------------------------------------
-    # Product Detail Page Content
-    # ---------------------------------------------------------------------------------------------------
-    def order_event(e, key):
-        print(f"{key}: {product_id}")
-        if key == "cart": pass
-        elif key == "order": page.go("/shop/order")
-        elif key == "wishlist": pass
-        elif key == "subs_order": page.go("/shop/order/subs")
     # ---------------------------------------------------------------------------------------------------
     # Product View
     # ---------------------------------------------------------------------------------------------------
-    if is_detail_page:
-        product_brand = dogdog.basic_text(p_brand, size=20, weight="bold", color=ft.Colors.GREY_900)
-        product_name = dogdog.basic_text(p_name, size=16, weight="bold", color=ft.Colors.GREY_800)
+    if dd.is_detail_page:
+        product_brand = dogdog.basic_text(dd.p_brand, size=20, weight="bold", color=ft.Colors.GREY_900)
+        product_brand.expand = True
+        product_brand.text_align = ft.TextAlign.CENTER
+        product_name = dogdog.basic_text(dd.p_name, weight="bold", color=ft.Colors.GREY_700)
         product_name.max_lines = 3
         product_name.overflow = ft.TextOverflow.ELLIPSIS
         product_name.text_align = ft.TextAlign.CENTER
-        product_name.width = header_width * 1.4
+        product_name.width = dd.header_width * 1.4
         product_price = dogdog.basic_text(spans=[
-            ft.TextSpan(f"{p_price:,}원\n"),
-            ft.TextSpan(f"똑똑 배송 적용가: {int(p_price*0.9):,}원",
+            ft.TextSpan(f"{dd.p_price:,}원\n"),
+            ft.TextSpan(f"똑똑 배송 적용가: {int(dd.p_price*0.9):,}원",
                 style=dogdog.TextStyle(size=12, color="#E6001A")) # type: ignore
-        ], weight="bold", color=ft.Colors.GREY_800)
+            ], weight="bold", color=ft.Colors.GREY_700)
         product_price.text_align = ft.TextAlign.CENTER
         # -----------------------------------------------------------------------------------------------
-        page_header_brand = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[product_brand])
+        page_header_brand = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
+            ft.IconButton(
+                icon=ft.Icons.ARROW_BACK_IOS, icon_size=10, 
+                on_click=lambda _:page.go("/shop")),
+            product_brand,
+            ft.Container(width=24)
+        ])
         page_header = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Container(width=header_width, height=header_width, image=ft.DecorationImage(src=p_thumbnail)),
+                ft.Container(width=dd.header_width, height=dd.header_width, image=ft.DecorationImage(src=dd.p_thumbnail)),
                 ft.Column(
-                    height=header_width,
+                    height=dd.header_width,
                     alignment=ft.MainAxisAlignment.SPACE_AROUND,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     controls=[
@@ -62,22 +160,22 @@ def shop_product_detail(page: ft.Page, content_page):
         ])])
         wish_list = dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
             text="♥", size=30, text_color=ft.Colors.WHITE,
-            on_click=lambda e:order_event(e=e, key="wishlist"))
+            on_click=lambda _:print("wish_list"))
         wish_list.padding = ft.padding.only(left=10, right=10)
         page_header_order = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
             dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
-                text="장바구니", size=16, text_color=ft.Colors.WHITE,
-                on_click=lambda e:order_event(e=e, key="cart")),
+                text="장바구니", size=16, text_color=ft.Colors.WHITE, expand=True,
+                on_click=lambda e:dd.bottom_sheet_open(e=e, key="cart")),
             dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
-                text="바로구매", size=16, text_color=ft.Colors.WHITE,
-                on_click=lambda e:order_event(e=e, key="order")),
+                text="바로구매", size=16, text_color=ft.Colors.WHITE, expand=True,
+                on_click=lambda e:dd.bottom_sheet_open(e=e, key="order")),
             wish_list
         ])
         subs_order = dogdog.flat_over_button(bgcolor="#E6001A", # type: ignore
             text="🔔 똑똑 배송으로 주문하기 🔔", expand=True, size=16, text_color=ft.Colors.WHITE,
-            on_click=lambda e:order_event(e=e, key="subs_order"))
+            on_click=lambda e:dd.bottom_sheet_open(e=e, key="subs_order"))
         subs_order.ink_color = "#80000F" # type: ignore
-        page_header_subs_order = ft.Row(margin=ft.margin.only(top=5, bottom=10), controls=[subs_order])
+        page_header_subs_order = ft.Row(margin=ft.margin.only(top=5, bottom=5), controls=[subs_order])
         # -----------------------------------------------------------------------------------------------
         content_column.append(page_header_brand)
         content_column.append(page_header)
@@ -87,12 +185,22 @@ def shop_product_detail(page: ft.Page, content_page):
         # -----------------------------------------------------------------------------------------------
         # Product Detail Image Append
         # -----------------------------------------------------------------------------------------------
-        for p_id , p_images in Product.product_detail_src.items():
+        def error_message(image_count):
+            message = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
+                dogdog.basic_text(f"{image_count}번 이미지가 로딩되지 않았어요.\nCORS 설정을 확인해주세요.")
+            ])
+            message.controls[0].text_align = ft.TextAlign.CENTER # type: ignore
+            return message
+
+        for p_id , p_images in dd.Product.product_detail_src.items():
             harim_url = "https://m.harimpetfood.com"
-            if p_id == product_id:
+            if p_id == dd.product_id:
+                i = 0
                 for image in p_images:
+                    i = i + 1
                     image_src_link = f"{harim_url}{image}"
-                    content_column.append(ft.Image(src=image_src_link))
+                    content_column.append(ft.Image(
+                        src=image_src_link, error_content=error_message(i)))
     else:
         content_column.append(
             ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
