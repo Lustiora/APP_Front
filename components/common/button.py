@@ -21,7 +21,7 @@ def flat_button(text, text_color=ft.Colors.GREY_600, scale=1.0, icon=None, size=
 
 def flat_over_button(text, text_color=ft.Colors.GREY_600, size=14, expand=None, on_click=None, bgcolor=ft.Colors.GREY_100, visible=True):
     return ft.Container(
-        padding=ft.padding.only(top=10, bottom=10, left=40, right=40),
+        padding=ft.padding.only(top=10, bottom=10),
         alignment=ft.Alignment.CENTER,
         on_click=on_click,
         ink=True,
