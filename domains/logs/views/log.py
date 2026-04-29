@@ -42,7 +42,7 @@ CHART_MAX_Y = 8
 
 WEEKDAY_NAMES = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 now = datetime.datetime.now()
-DETAIL_BANNER_TEXT = f"{(now-datetime.timedelta(days=6)).strftime("%Y-%m-%d")} ~ {now.strftime("%Y-%m-%d")}"
+DETAIL_BANNER_TEXT = f"{(now - datetime.timedelta(days=6)).strftime('%Y-%m-%d')} ~ {now.strftime('%Y-%m-%d')}"
 SUMMARY_TEXT = "일 평균 000kcal   |   목표 000kcal   |   달성 0회"
 
 CARD_BORDER_COLOR = BORDER_DARK
@@ -67,47 +67,48 @@ def micro_box(text):
 
 
 def log_view(page: ft.Page):
-    page.padding = 0
-    page.spacing = 0
-    page.vertical_alignment = ft.MainAxisAlignment.START
-    page.bgcolor = SURFACE_WHITE
-    page.appbar = None
+    if len(page.views) > 0:
+        page.padding = 0
+        page.spacing = 0
+        page.vertical_alignment = ft.MainAxisAlignment.START
+        page.bgcolor = SURFACE_WHITE
+        page.appbar = None
 
-    today = datetime.date.today()
+        today = datetime.date.today()
 
-    current_year = today.year
-    current_month = today.month
-    selected_date = today
+        current_year = today.year
+        current_month = today.month
+        selected_date = today
 
-    selected_banner = {"index": None}
-    selected_metric = "급여량"
+        selected_banner = {"index": None}
+        selected_metric = "급여량"
 
-    calendar_container = ft.Container()
-    detail_banner_area = ft.Container()
-    chart_container = ft.Container(padding=20)
-    metric_selector_container = ft.Container()
+        calendar_container = ft.Container()
+        detail_banner_area = ft.Container()
+        chart_container = ft.Container(padding=20)
+        metric_selector_container = ft.Container()
 
-    chart_data_map = {
-        "급여량": [
-            ("월요일", 2.8),
-            ("화요일", 3.0),
-            ("수요일", 3.4),
-            ("목요일", 3.1),
-            ("금요일", 3.6),
-            ("토요일", 3.8),
-            ("일요일", 3.3),
-        ],
-        "음수량": [],
-        "몸무게": [
-            ("월요일", 2.2),
-            ("화요일", 2.3),
-            ("수요일", 4.2),
-            ("목요일", 2.0),
-            ("금요일", 5.0),
-            ("토요일", 6.2),
-            ("일요일", 3.9),
-        ],
-    }
+        chart_data_map = {
+            "급여량": [
+                ("월요일", 2.8),
+                ("화요일", 3.0),
+                ("수요일", 3.4),
+                ("목요일", 3.1),
+                ("금요일", 3.6),
+                ("토요일", 3.8),
+                ("일요일", 3.3),
+            ],
+            "음수량": [],
+            "몸무게": [
+                ("월요일", 2.2),
+                ("화요일", 2.3),
+                ("수요일", 4.2),
+                ("목요일", 2.0),
+                ("금요일", 5.0),
+                ("토요일", 6.2),
+                ("일요일", 3.9),
+            ],
+        }
 
     # ============================================================
     # ✅ 달력 관련 함수
@@ -122,7 +123,9 @@ def log_view(page: ft.Page):
         page.update()
 
     def handle_day_click(day):
-        tapped_date = datetime.date(current_year, current_month, day).strftime("%Y.%m.%d")
+        tapped_date = datetime.date(current_year, current_month, day).strftime(
+            "%Y.%m.%d"
+        )
         page.session.store.set("select_log_date", tapped_date)
         page.go("/history")
         select_day(day)
@@ -217,7 +220,9 @@ def log_view(page: ft.Page):
                     ft.Container(
                         expand=True,
                         alignment=ft.Alignment(-1, 0),  # 👉 제목을 좌측 정렬
-                        padding=ft.padding.only(left=4, right=SMALL_GAP),  # 👉 살짝 왼쪽 붙이고 오른쪽도 조금 띄움
+                        padding=ft.padding.only(
+                            left=4, right=SMALL_GAP
+                        ),  # 👉 살짝 왼쪽 붙이고 오른쪽도 조금 띄움
                         content=dogdog.Txt(
                             month_title(current_year, current_month),
                             size=17,
@@ -258,7 +263,7 @@ def log_view(page: ft.Page):
     def refresh_calendar():
         cal = calendar.Calendar(firstweekday=6)
         month_days = cal.monthdayscalendar(current_year, current_month)
-        calendar_width = float('inf') * 7
+        calendar_width = float("inf") * 7
 
         week_rows = [
             ft.Row(
@@ -286,7 +291,7 @@ def log_view(page: ft.Page):
                         tight=True,
                         spacing=SMALL_GAP,
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        controls=week_rows, # type: ignore
+                        controls=week_rows,  # type: ignore
                     ),
                 ],
             ),
@@ -303,7 +308,7 @@ def log_view(page: ft.Page):
     async def open_weekly_banner(e):
         change_selected_banner(0)
         await asyncio.sleep(0.3)
-        page.session.store.set("select_log_week",DETAIL_BANNER_TEXT)
+        page.session.store.set("select_log_week", DETAIL_BANNER_TEXT)
         page.go("/history")
         # page.open_log_weekly()
 
@@ -387,7 +392,7 @@ def log_view(page: ft.Page):
                         size=13,
                         color=TEXT_TERTIARY,
                         weight=ft.FontWeight.W_500,
-                    )
+                    ),
                 )
             )
 
@@ -446,7 +451,7 @@ def log_view(page: ft.Page):
                 color=ft.Colors.TRANSPARENT,
                 width=0,
             ),
-        )        
+        )
 
         return case
 
@@ -553,5 +558,5 @@ def log_view(page: ft.Page):
         dog_stat_card_section(),
         grey_summary_section(),
     ]
-    
+
     return main_content

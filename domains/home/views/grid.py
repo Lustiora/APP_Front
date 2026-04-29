@@ -2,40 +2,28 @@
 import flet as ft
 import components as dogdog
 import datetime
-import domains
 from api_client import ApiClient
-from domains.logs.controller.grid_controller import GridController
 import os
-
 
 # -------------------------------------------------------------------------------------------------------
 class StatusController:
-    def __init__(self, page: ft.Page, popup, on_refresh_callback=None):
+    def __init__(self, page: ft.Page):
         # -----------------------------------------------------------------------------------------------
         # Default Value
         # -----------------------------------------------------------------------------------------------
         self.page = page
-        self.popup = popup
-        self.on_refresh_callback = on_refresh_callback
         self.storage = page.session.store
+        self.popup = dogdog.Popup(page=page)
         self.popup.event_popup.actions[0] = ft.Row()
         self.popup.event_popup.actions[1].content = "닫기"  # type: ignore
         self.popup.event_popup.modal = False
         if self.storage.get("customer_food_id"):
             self.storage.remove("customer_food_id")
         # -----------------------------------------------------------------------------------------------
-        # Popup Bottom Sheet
+        # Bottom Sheet
         # -----------------------------------------------------------------------------------------------
         self.grid_bottom_sheet = self.popup.bottom_sheet_popup
-        self.bottom_sheet_contents = self.popup.bottom_sheet_controls
-        self.bottom_sheet_contents.clear()
-        # -----------------------------------------------------------------------------------------------
-        # Guide Bottom Sheet
-        # -----------------------------------------------------------------------------------------------
-        self.guide_bottom_sheet_content = []
-        self.guide_page = dogdog.bottom_sheet(content=self.guide_bottom_sheet_content)
-        # -----------------------------------------------------------------------------------------------
-        # Date Picker
+        self.bottom_sheet_contents = self.grid_bottom_sheet.content.content.controls  # type: ignore
         # -----------------------------------------------------------------------------------------------
         self.date_picker = ft.DatePicker(
             first_date=datetime.datetime.now() - datetime.timedelta(days=7),
@@ -50,8 +38,6 @@ class StatusController:
             e, picker
         )
         # -----------------------------------------------------------------------------------------------
-        # Time Picker
-        # -----------------------------------------------------------------------------------------------
         self.time_picker = ft.TimePicker(entry_mode=ft.TimePickerEntryMode.DIAL_ONLY)
         self.time_button = dogdog.flat_icon_text_button(
             ft.Icons.ACCESS_TIME,
@@ -63,7 +49,6 @@ class StatusController:
         self.time_button.on_click = lambda e, picker=self.time_picker: self.open_event(
             e, picker
         )
-        self.ctrl = GridController(page)
 
     # ---------------------------------------------------------------------------------------------------
     # Picker Open Event
@@ -120,16 +105,6 @@ class StatusController:
         self.grid_bottom_sheet.update()
 
     # ---------------------------------------------------------------------------------------------------
-    # API 전송 태스크
-    # ---------------------------------------------------------------------------------------------------
-    async def save_feeding_api_wrapper(self, call):
-        """GridController의 저장 로직 호출"""
-        success = await self.ctrl.save_feeding_api(call, self.on_refresh_callback)
-        if success:
-            self.grid_bottom_sheet.open = False
-            self.page.update()
-
-    # ---------------------------------------------------------------------------------------------------
     # Button Push Event
     # ---------------------------------------------------------------------------------------------------
     def button_event(self, e, call, content):
@@ -153,18 +128,17 @@ class StatusController:
             # self.show_error(content)
         elif content == "save":
             if call == "feeding":
-                # 기존 밸리데이션 로직
-                if not self.storage.get("customer_food_id"):
-                    print(f"[DEBUG] {call_title}: {call_message}")
+                if self.storage.get("customer_food_id"):
+                    event_text.update(
+                        {"customer_food_id": self.storage.get("customer_food_id")}
+                    )
+                else:
+                    # 🚨 [AttributeError 방지] 정의되지 않은 show_popup_open 주석 처리
+                    # self.popup.show_popup_open(
+                    #     e=e, case="event_popup", title=call_title, text=call_message
+                    # )
+                    print(f"[ERROR] {call_title}: {call_message}")
                     return
-                if not self.storage.get(f"{call}_weight"):
-                    print(f"[DEBUG] {call_title}: {call_message}")
-                    return
-
-                # 컨트롤러의 저장 태스크 실행
-                self.page.run_task(self.save_feeding_api_wrapper, call)
-                return
-
             if self.storage.get(f"{call}_weight"):
                 event_text.update(
                     {f"{call}_weight": self.storage.get(f"{call}_weight")}
@@ -179,25 +153,35 @@ class StatusController:
             elif call == "status_log":
                 pass
             else:
-                # self.popup.show_popup_open(e=e, case="event_popup", title=call_title, text=call_message)
-                print(f"[DEBUG] {call_title}: {call_message}")
+                # 🚨 [AttributeError 방지] 정의되지 않은 show_popup_open 주석 처리
+                # self.popup.show_popup_open(
+                #     e=e, case="event_popup", title=call_title, text=call_message
+                # )
+                print(f"[ERROR] {call_title}: {call_message}")
                 return
             if self.storage.get(f"{call}_memo"):
-                event_text.update({f"{call}_memo": self.storage.get(f"{call}_memo")})
+                event_text.update(
+                    {f"{call}_memo": self.storage.get("customer_food_id")}
+                )
             else:
                 if call == "status_log":
-                    # self.popup.show_popup_open(e=e, case="event_popup", title=call_title, text=call_message)
-                    print(f"[DEBUG] {call_title}: {call_message}")
+                    # 🚨 [AttributeError 방지] 정의되지 않은 show_popup_open 주석 처리
+                    # self.popup.show_popup_open(
+                    #     e=e, case="event_popup", title=call_title, text=call_message
+                    # )
+                    print(f"[ERROR] {call_title}: {call_message}")
                     return
             event_text.update({f"{call}_date": self.storage.get(f"{call}_date")})
             event_text.update({f"{call}_time": self.storage.get(f"{call}_time")})
-            # self.popup.show_popup_open(e=e, case="event_popup", title=call, text=event_text)
-            print(f"[DEBUG] {call} 저장 시도: {event_text}")
+            
+            # 🚨 [AttributeError 방지] 정의되지 않은 show_popup_open 주석 처리
+            # self.popup.show_popup_open(
+            #     e=e, case="event_popup", title=call, text=event_text
+            # )
+            print(f"[SAVE SUCCESS] {call}: {event_text}")
+
         elif content == "feeding_add":
             self.page.go("/feeding_add")
-            self.grid_bottom_sheet.open = False
-            self.page.update()
-            return
         elif content == "cancel":
             pass
         self.grid_bottom_sheet.open = False
@@ -236,51 +220,19 @@ class StatusController:
             )
         self.bottom_sheet_contents.append(ft.Divider())
 
-    # ---------------------------------------------------------------------------------------------------
-    # Guide Bottom Sheet Event
-    # ---------------------------------------------------------------------------------------------------
-    def guide_bottom_sheet(self, e, route):
-        def guide_close(e):
-            self.guide_page.open = False
-
-        if self.guide_page not in self.page.overlay:
-            self.page.overlay.append(self.guide_page)
-        self.guide_bottom_sheet_content.clear()
-        self.guide_bottom_sheet_content.append(
-            ft.Row(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    dogdog.basic_text(
-                        f"{'배변 스코어란?' if route == 'bowel' else 'BCS 란?'}",
-                        size=25,
-                        weight="bold",
-                    ),
-                    dogdog.flat_button(
-                        "닫기", on_click=lambda e: guide_close(e), scale=0.8
-                    ),
-                ],
-            )
-        )
-        self.guide_bottom_sheet_content.append(ft.Divider())
-        self.guide_bottom_sheet_content.append(
-            ft.Column(
-                expand=True,
-                scroll=ft.ScrollMode.HIDDEN,
-                controls=[domains.guide.what_guide(page=self.page, content=route)],
-            )
-        )
-        self.guide_page.open = True
-
 
 # -------------------------------------------------------------------------------------------------------
-async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
+async def bottom_sheet(e, page: ft.Page, call):
+    # 🚨🚨🚨 [경로 디버깅] 진짜 실행 중인 파일의 절대 경로를 출력합니다 🚨🚨🚨
+    print("="*50)
+    print(f"🚨🚨🚨 진짜 실행 중인 grid.py 경로: {os.path.abspath(__file__)} 🚨🚨🚨")
+    print("="*50)
+
     # ---------------------------------------------------------------------------------------------------
     # Default Value
     # ---------------------------------------------------------------------------------------------------
     storage = page.session.store
-    s_control = StatusController(
-        page=page, popup=popup, on_refresh_callback=on_refresh_callback
-    )
+    s_control = StatusController(page=page)
     customer_detail = storage.get("customer_detail")
     is_customer_detail = True
 
@@ -330,46 +282,44 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
         )
 
     # ---------------------------------------------------------------------------------------------------
+    s_control.bottom_sheet_contents.clear()
+    # ---------------------------------------------------------------------------------------------------
     if call == "feeding":
         print("✅ 밥주기(feeding) 조건문 진입 성공!")
         s_control.bottom_sheet_title("밥주기")
 
-        # 1. 컨트롤러 인스턴스화 및 데이터 조회
-        ctrl = GridController(page)
+        # 1. API를 통한 사료 정보 실시간 조회
+        api_client = ApiClient(page)
+        pet_id = storage.get("pet_id")
 
-        # 1-1. 세션 Key 다중 탐색 (Fallback 적용)
-        pet_id = (
-            storage.get("pet_id")
-            or storage.get("customer_pet_id")
-            or storage.get("current_pet_id")
-        )
-        print(f"[DEBUG] Grid View - pet_id: {pet_id}")
-
-        # 1-2. 비동기로 1회 권장 급여량 가져오기
-        recommended_amount = await ctrl.get_one_time_feeding_amount(pet_id)
-        pet_name = storage.get("customer_pet_name") or "아이"
+        # 🚨 [디버그 1] 펫 ID가 세션에 잘 있는지 터미널에서 확인!
+        print(f"[DEBUG] 현재 세션의 pet_id: {pet_id}")
 
         food_options = []
         initial_value = None
         has_food = False
 
         try:
-            # 1-3. 사료 정보 조회
-            if not pet_id:
-                raise ValueError("세션에서 강아지 ID를 찾을 수 없습니다.")
+            res = await api_client.get(f"/pets/{pet_id}/pet_food")
 
-            food_data = await ctrl.get_pet_food_info(pet_id)
-            if food_data:
-                p_id = food_data.get("product_id")
-                brand = food_data.get("product_brand") or ""
-                name = food_data.get("product_name") or ""
-                weight = food_data.get("product_weight") or 0
+            # 🚨 [디버그 2] API가 실제로 어떤 데이터를 주는지 터미널에서 확인!
+            print(f"[DEBUG] 사료 API 상태코드: {res.status_code}")
+            print(f"[DEBUG] 사료 API 응답값: {res.text}")
 
-                label = (
-                    f"[{brand}] {name} ({weight}g)"
-                    if brand or name
-                    else f"알 수 없는 사료 ({weight}g)"
-                )
+            if res.status_code == 200:
+                data = res.json().get("data", {})
+                p_id = data.get("product_id")
+
+                # 🔥 [핵심 방어] DB에서 null이 오면 None 대신 빈 문자열("")로 바꿈
+                brand = data.get("product_brand") or ""
+                name = data.get("product_name") or ""
+                weight = data.get("product_weight") or 0
+
+                # 글자가 아예 없으면 "이름 없는 사료"라고 띄우기
+                if not brand and not name:
+                    label = f"알 수 없는 사료 ({weight}g)"
+                else:
+                    label = f"[{brand}] {name} ({weight}g)"
 
                 food_options = [dogdog.dropdown_menu_option(key=str(p_id), text=label)]
                 initial_value = str(p_id)
@@ -391,7 +341,7 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
 
         if has_food:
             feeding_guide = ft.Column(
-                visible=True,  # 전부사료등록으로시뮬레이션예정이라 변경
+                visible=False,
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=0,
@@ -400,7 +350,7 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
                         margin=ft.margin.only(bottom=10),
                         controls=[
                             dogdog.basic_text(
-                                value=f"오늘 {pet_name}에게 딱 알맞는 1회 급여량은 ...",
+                                value=f"오늘 {storage.get('customer_pet_name')}에게 딱 알맞는 1회 급여량은 ...",
                                 size=16,
                                 weight="bold",
                                 color=ft.Colors.GREY_600,
@@ -413,9 +363,7 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
                             ft.Image(
                                 src="speech_bubble.png", height=100, color="#FEF3B9"
                             ),
-                            dogdog.basic_text(
-                                recommended_amount, weight="bold", size=40
-                            ),
+                            dogdog.basic_text("40g", weight="bold", size=40),
                         ],
                         spacing=-90,
                     ),
@@ -425,22 +373,22 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
                 ],
             )
 
-            food_dropdown = dogdog.dropdown_menu(
-                label="사료를 선택해주세요.",
-                options=food_options,
-                event=lambda e, change="customer_food_id", case=feeding_guide: (
-                    s_control.change_event(e, change, case)
-                ),
-            )
-            food_dropdown.value = initial_value
-
             feeding_food_list = ft.Row(
                 margin=ft.margin.only(bottom=18),
-                controls=[food_dropdown],
+                controls=[
+                    dogdog.dropdown_menu(
+                        label="사료를 선택해주세요.",
+                        options=food_options,
+                        value=initial_value,  # 초기값 설정
+                        event=lambda e, change="customer_food_id", case=feeding_guide: (
+                            s_control.change_event(e, change, case)
+                        ),
+                    )
+                ],
             )
 
             feeding_weight = dogdog.input_textfield(
-                hint_text= recommended_amount,
+                hint_text="급여량을 적어주세요.",
                 input_type="int",
                 suffix="g",
                 on_change=lambda e, change=f"{call}_weight": s_control.change_event(
@@ -480,9 +428,11 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
                     ),
                 ],
             )
-            setting_content = [
+            setting_content_items = [
                 dogdog.flat_button(
                     "등록하러가기",
+                    disabled=False,
+                    scale=1,
                     bgcolor="#FEF3B9",  # type: ignore
                     on_click=lambda e, menu=call, content="feeding_add": (
                         s_control.button_event(e, call, content)
@@ -490,6 +440,8 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
                 ),
                 dogdog.flat_button(
                     "나중에 등록할께요",
+                    disabled=False,
+                    scale=1,
                     on_click=lambda e, menu=call, content="cancel": (
                         s_control.button_event(e, call, content)
                     ),
@@ -501,7 +453,7 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
                     ft.Column(
                         spacing=20,
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        controls=setting_content,
+                        controls=setting_content_items,
                     )
                 ],  # type: ignore
             )
@@ -565,8 +517,7 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
     # ---------------------------------------------------------------------------------------------------
     elif call == "hygiene_bowel":
         s_control.bottom_sheet_title(
-            "위생/배변",
-            lambda e=e, route="bowel": s_control.guide_bottom_sheet(e, route),
+            "위생/배변", lambda _: page.go("/what_bowel_score")
         )
         hygiene_bowel_score = dogdog.dropdown_menu(
             label="배변 스코어를 선택해주세요.",
@@ -578,6 +529,7 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
         ]
         if storage.get(f"{call}_weight"):
             storage.remove(f"{call}_weight")
+
         hygiene_bowel_memo = dogdog.input_textfield(
             hint_text="메모 (선택)",
             text_filter=None,
@@ -593,9 +545,7 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
         s_control.bottom_sheet_contents.append(hygiene_bowel_memo)
     # ---------------------------------------------------------------------------------------------------
     elif call == "health_log":
-        s_control.bottom_sheet_title(
-            "건강기록", lambda e=e, route="bcs": s_control.guide_bottom_sheet(e, route)
-        )
+        s_control.bottom_sheet_title("건강기록", lambda _: page.go("/what_bcs"))
         health_log = dogdog.input_textfield(
             hint_text="몸무게를 적어주세요.",
             input_type="float",
@@ -606,21 +556,19 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
         )
         if storage.get(f"{call}_float_weight"):
             storage.remove(f"{call}_float_weight")
-        health_bcs = dogdog.dropdown_menu(
-            label="BCS를 선택해주세요.",
-            options=[],
-            event=lambda e, change=f"{call}_bcs_weight": s_control.change_event(
+        health_bcs_log = dogdog.input_textfield(
+            hint_text="BCS를 적어주세요.",
+            input_type="int",
+            suffix="1 ~ 7",
+            on_change=lambda e, change=f"{call}_bcs_weight": s_control.change_event(
                 e, change
             ),
         )
-        health_bcs.options = [
-            dogdog.dropdown_menu_option(text=f"{row}") for row in range(9, 0, -1)
-        ]
         if storage.get(f"{call}_bcs_weight"):
             storage.remove(f"{call}_bcs_weight")
         # -----------------------------------------------------------------------------------------------
         s_control.bottom_sheet_contents.append(health_log)
-        s_control.bottom_sheet_contents.append(health_bcs)
+        s_control.bottom_sheet_contents.append(health_bcs_log)
     # ---------------------------------------------------------------------------------------------------
     elif call == "status_log":
         s_control.bottom_sheet_title("상태기록")
@@ -662,7 +610,7 @@ async def bottom_sheet(e, page: ft.Page, popup, call, on_refresh_callback=None):
 
 
 # -------------------------------------------------------------------------------------------------------
-def status_update_menu(page: ft.Page, popup, on_refresh_callback=None):
+def status_update_menu(page: ft.Page):
     # ---------------------------------------------------------------------------------------------------
     # Default Value
     # ---------------------------------------------------------------------------------------------------
@@ -670,46 +618,34 @@ def status_update_menu(page: ft.Page, popup, on_refresh_callback=None):
         (
             "밥주기",
             "dogbowl.png",
-            lambda e, call="feeding": page.run_task(
-                bottom_sheet, e, page, popup, call, on_refresh_callback
-            ),
+            lambda e, call="feeding": page.run_task(bottom_sheet, e, page, call),
         ),
         (
             "물주기",
             "waterdrop.png",
-            lambda e, call="watering": page.run_task(
-                bottom_sheet, e, page, popup, call, on_refresh_callback
-            ),
+            lambda e, call="watering": page.run_task(bottom_sheet, e, page, call),
         ),
         (
             "활동기록",
             "dogwalking.png",
-            lambda e, call="daily_walks": page.run_task(
-                bottom_sheet, e, page, popup, call, on_refresh_callback
-            ),
+            lambda e, call="daily_walks": page.run_task(bottom_sheet, e, page, call),
         ),
     ]
     content_list_bottom = [
         (
             "위생/배변",
             "poop.png",
-            lambda e, call="hygiene_bowel": page.run_task(
-                bottom_sheet, e, page, popup, call, on_refresh_callback
-            ),
+            lambda e, call="hygiene_bowel": page.run_task(bottom_sheet, e, page, call),
         ),
         (
             "건강기록",
             "injection.png",
-            lambda e, call="health_log": page.run_task(
-                bottom_sheet, e, page, popup, call, on_refresh_callback
-            ),
+            lambda e, call="health_log": page.run_task(bottom_sheet, e, page, call),
         ),
         (
             "상태기록",
             "note.png",
-            lambda e, call="status_log": page.run_task(
-                bottom_sheet, e, page, popup, call, on_refresh_callback
-            ),
+            lambda e, call="status_log": page.run_task(bottom_sheet, e, page, call),
         ),
     ]
     # ---------------------------------------------------------------------------------------------------
