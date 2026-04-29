@@ -56,18 +56,18 @@ def history_view(page: ft.Page):
     watering_log = []
     daily_work_log = []
     for pet_log_numeric_id , details in user_logs.items(): # type: ignore
-        log_date = (details["log_date"].split()[0]).split("-")
+        log_date = (details.get('log_date').split()[0]).split("-")
         view_log_date = f"{log_date[0]}.{log_date[1]}.{log_date[2]}"
         if view_log_date in view_date: # type: ignore
             all_log.append(
                 dogdog.log_container(page, pet_log_numeric_id, details))
-            if details["category"] == "급여량": 
+            if details.get('category') == "급여량": 
                 feeding_log.append(
                     dogdog.log_container(page, pet_log_numeric_id, details))
-            if details["category"] == "음수량": 
+            if details.get('category') == "음수량": 
                 watering_log.append(
                     dogdog.log_container(page, pet_log_numeric_id, details))
-            if details["category"] == "산책": 
+            if details.get('category') == "산책": 
                 daily_work_log.append(
                     dogdog.log_container(page, pet_log_numeric_id, details))
 

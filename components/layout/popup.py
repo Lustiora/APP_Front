@@ -10,6 +10,7 @@ class Popup:
             modal=True,
             title=dogdog.basic_text(value="Quit"),
             content=dogdog.basic_text(value="Exit?"),
+            bgcolor=ft.Colors.WHITE,
             actions_alignment = ft.MainAxisAlignment.END,
             actions=[
                 ft.TextButton("OK"),

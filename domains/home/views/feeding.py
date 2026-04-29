@@ -12,11 +12,11 @@ def content_container_detail(page: ft.Page, customer_food_id=None, feeding_data:
         page.go("/feeding_edit")
 
     now = datetime.datetime.now()
-    days = datetime.timedelta(days=feeding_data["left_food_count"]) if feeding_data else 0
+    days = datetime.timedelta(days=feeding_data.get('left_food_count')) if feeding_data else 0
     last_feeding_food_count = (now+days).strftime("%Y.%m.%d") if days != 0 else "????.??.??"
 
-    feeding_food_weight = feeding_data["left_intake"] if feeding_data else 0
-    g_product_weight = feeding_data["total_weight"] if feeding_data else 5
+    feeding_food_weight = feeding_data.get('left_intake') if feeding_data else 0
+    g_product_weight = feeding_data.get('total_weight') if feeding_data else 5
     kg_product_weight = float(g_product_weight / 1000)
     view_product_weight = (
         f"{kg_product_weight}Kg" if len(str(kg_product_weight).replace(".0", "")) > 2 
@@ -24,10 +24,10 @@ def content_container_detail(page: ft.Page, customer_food_id=None, feeding_data:
     ) if feeding_data else "???Kg"
 
     product_detail = ft.Row(height=100, expand=True, controls=[
-        ft.Image(src=feeding_data["thumbnail"], fit=ft.BoxFit.CONTAIN, expand=2),
+        ft.Image(src=feeding_data.get('thumbnail'), fit=ft.BoxFit.CONTAIN, expand=2),
         ft.Column(expand=3, spacing=0, alignment=ft.MainAxisAlignment.CENTER, controls=[
-            dogdog.basic_text(value=feeding_data["brand"]),
-            dogdog.basic_text(value=feeding_data["product_name"], weight="bold")
+            dogdog.basic_text(value=feeding_data.get('brand')),
+            dogdog.basic_text(value=feeding_data.get('product_name'), weight="bold")
         ]),
         ft.Column(
             controls=[dogdog.flat_button(text="변경", scale=0.8, on_click=feeding_edit_event)]
@@ -49,7 +49,7 @@ def content_container_detail(page: ft.Page, customer_food_id=None, feeding_data:
                         style=dogdog.TextStyle(size=16, height=-1)),
                     ft.TextSpan(text=f" / {view_product_weight}")
                 ], color=ft.Colors.GREY_400, weight="bold", size=16),
-                dogdog.flat_button(text=f"{feeding_data["left_food_count"] if feeding_data else "?"} 일치 남음", scale=0.7, disabled=True),
+                dogdog.flat_button(text=f"{feeding_data.get('left_food_count') if feeding_data else "?"} 일치 남음", scale=0.7, disabled=True),
             ]),
             ft.ProgressBar(
                 height=10,

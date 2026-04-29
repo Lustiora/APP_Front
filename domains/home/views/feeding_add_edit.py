@@ -85,16 +85,16 @@ def feeding_add_edit(page: ft.Page, view):
             page.go("/feeding")
             show_error("정상적이지 않은 접근입니다.")
             return ft.Container(padding=ft.Padding.only(left=20, right=20, top=20), bgcolor="#ffffff")
-        storage.set(key="food_text", value=f"{feeding_data["brand"]} {feeding_data["product_name"]}")
-        storage.set(key="product_id", value=feeding_data["product_id"])
-        storage.set(key="food_id", value=feeding_data["product_detail_id"])
+        storage.set(key="food_text", value=f"{feeding_data.get('brand')} {feeding_data.get('product_name')}")
+        storage.set(key="product_id", value=feeding_data.get('product_id'))
+        storage.set(key="food_id", value=feeding_data.get('product_detail_id'))
         feeding_start_date = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=5,
             controls=[
                 ft.Icon(icon=ft.Icons.CALENDAR_MONTH, color=ft.Colors.GREY_600, size=16),
-                dogdog.basic_text(value=f"급여 시작일 : {feeding_data['feeding_start']}", color=ft.Colors.GREY_600),
+                dogdog.basic_text(value=f"급여 시작일 : {feeding_data.get('feeding_start')}", color=ft.Colors.GREY_600),
             ]
         )
     # ---------------------------------------------------------------------------------------------------

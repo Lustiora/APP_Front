@@ -99,8 +99,18 @@ def home_tile(page: ft.Page, popup, content_page:str, change_page_callback=None)
         main_container_content.append(top_banner)
         main_container_content.append(body_scroll_column)
         body_scroll_column.margin = None
+        # -----------------------------------------------------------------------------------------------
         if "product/" in content_page:
             body_scroll_column.controls.append(domains.shop_product_detail.shop_product_detail(
                 page=page, popup=popup, content_page=content_page))
+        # -----------------------------------------------------------------------------------------------
+        elif "/cart" in content_page:
+            body_scroll_column.controls.append(dogdog.basic_text("장바구니 페이지"))
+        # -----------------------------------------------------------------------------------------------
+        elif "/order" in content_page:
+            body_scroll_column.controls.append(dogdog.basic_text("상품 구매 페이지"))
+        # -----------------------------------------------------------------------------------------------
+        elif "/subs_order" in content_page:
+            body_scroll_column.controls.append(dogdog.basic_text("구독 상품 구매 페이지"))
     # ---------------------------------------------------------------------------------------------------
     return home_background , main_container_content

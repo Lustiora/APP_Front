@@ -18,10 +18,10 @@ class Default_data:
         self.is_detail_page = False
         for p_id , p_d in self.Product.guide_product_list.items():
             if p_id == self.product_id:
-                self.p_thumbnail = p_d["thumbnail"]
-                self.p_brand = p_d["brand"]
-                self.p_name = p_d["product_name"]
-                self.p_price = int(p_d["sales_price"])
+                self.p_thumbnail = str(p_d.get('thumbnail'))
+                self.p_brand = str(p_d.get('brand'))
+                self.p_name = str(p_d.get('product_name'))
+                self.p_price = int(p_d.get('sales_price')) # type: ignore
                 self.is_detail_page = True
                 break
         self.default_bottom_sheet = popup.bottom_sheet_popup
@@ -43,7 +43,7 @@ class Default_data:
             ], weight="bold", color=ft.Colors.GREY_700)
         self.order_price = int(self.p_price*0.9) if key == "subs_order" else self.p_price
         self.default_bottom_sheet_content.clear()
-        print(f"{key}: {self.product_id}")
+        # print(f"{key}: {self.product_id}")
         bt_product_name = dogdog.basic_text(
             f"[{self.p_brand}] {self.p_name}", weight="bold", color=ft.Colors.GREY_700)
         bt_product_name.expand = True
@@ -74,15 +74,15 @@ class Default_data:
         ])
         self.bt_product_bottom = dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
             text=None, size=16, text_color=ft.Colors.WHITE, expand=True,
-            on_click=(lambda _:self.page.go(f"/shop/{key}")) if not key == "cart" else None
+            on_click=lambda e:self.routing_page_event(e, key)
         )
         # -----------------------------------------------------------------------------------------------
         self.bt_button = self.bt_product_bottom.content
-        self.bt_button.value = f"{self.order_price:,}{self.message[key]}" # type: ignore
+        self.bt_button.value = f"{self.order_price:,}{self.message.get(key)}" # type: ignore
         if key == "subs_order": # page.go("/shop/order/subs")
             self.bt_product_bottom.bgcolor = "#E6001A" # type: ignore
             self.bt_button.color = ft.Colors.WHITE # type: ignore
-            self.bt_button.value = f"🔔 {self.order_price:,}{self.message[key]}" # type: ignore
+            self.bt_button.value = f"🔔 {self.order_price:,}{self.message.get(key)}" # type: ignore
         # -----------------------------------------------------------------------------------------------
         self.default_bottom_sheet_content.append(bt_product_header)
         self.default_bottom_sheet_content.append(ft.Divider())
@@ -105,12 +105,42 @@ class Default_data:
             if count > 1: self.bt_order_count_value = count - 1
         elif value == "forward":
             if count < 99: self.bt_order_count_value = count + 1
-        self.bt_button.value = f"{self.order_price * self.bt_order_count_value:,}{self.message[key]}" # type: ignore
+        self.bt_button.value = f"{self.order_price * self.bt_order_count_value:,}{self.message.get(key)}" # type: ignore
         if key == "subs_order": # page.go("/shop/order/subs")
             self.bt_button.value = "🔔 " + self.bt_button.value # type: ignore
         self.bt_order_count_input.value = str(self.bt_order_count_value)
         self.bt_order_count.update()
         self.bt_product_bottom.update()
+    # ---------------------------------------------------------------------------------------------------
+    # Route Change Event
+    # ---------------------------------------------------------------------------------------------------
+    def routing_page_event(self, e, key):
+        def cart_rauting(e, key):
+            cart_event.open = False
+            self.page.go(f"/shop/{key}")
+        self.default_bottom_sheet.open = False
+        # self.page.update()
+        # print(key)
+        if key == "wishlist":
+            self.show_event(text=f"{self.p_name} 상품이 위시리스트에 추가되었습니다!")
+        elif key == "cart": 
+            cart_event = self.popup.event_popup
+            cart_event.title = dogdog.basic_text("장바구니", size=16, weight="bold")
+            cart_event.content.value = "장바구니에 상품이 추가되었습니다\n확인하시겠어요?"
+            cart_event.actions[0].content = "네"
+            cart_event.actions[0].on_click = lambda e:cart_rauting(e,key)
+            cart_event.actions[1].content = "괜찮아요"
+            if cart_event not in self.page.overlay:
+                self.page.overlay.append(cart_event)
+            else:
+                self.page.overlay.clear()
+                self.page.overlay.append(cart_event)
+            cart_event.open = True
+            self.page.update()
+        else:
+            self.page.go(f"/shop/{key}")
+    def show_event(self, text:str):
+        self.page.show_dialog(ft.SnackBar(content=ft.Text(value=text), open=True, behavior=ft.SnackBarBehavior.FLOATING))
 # -------------------------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------------------------
@@ -158,10 +188,10 @@ def shop_product_detail(page: ft.Page, popup, content_page):
                         product_name,
                         product_price
         ])])
-        wish_list = dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
+        wishlist = dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
             text="♥", size=30, text_color=ft.Colors.WHITE,
-            on_click=lambda _:print("wish_list"))
-        wish_list.padding = ft.padding.only(left=10, right=10)
+            on_click=lambda e:dd.routing_page_event(e, "wishlist"))
+        wishlist.padding = ft.padding.only(left=10, right=10)
         page_header_order = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
             dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
                 text="장바구니", size=16, text_color=ft.Colors.WHITE, expand=True,
@@ -169,7 +199,7 @@ def shop_product_detail(page: ft.Page, popup, content_page):
             dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
                 text="바로구매", size=16, text_color=ft.Colors.WHITE, expand=True,
                 on_click=lambda e:dd.bottom_sheet_open(e=e, key="order")),
-            wish_list
+            wishlist
         ])
         subs_order = dogdog.flat_over_button(bgcolor="#E6001A", # type: ignore
             text="🔔 똑똑 배송으로 주문하기 🔔", expand=True, size=16, text_color=ft.Colors.WHITE,

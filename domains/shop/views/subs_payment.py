@@ -295,7 +295,7 @@ def line_address_input(page, label, address_value=""):
         page.clean()
         def receive_address(data):
             page.clean()
-            shop_page(page, address_value=data["full_address"])
+            shop_page(page, address_value=data.get('full_address'))
 
         address.main(page, on_complete=receive_address)
     
