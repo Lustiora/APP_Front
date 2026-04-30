@@ -3,7 +3,7 @@ import flet as ft
 import components as dogdog
 # -------------------------------------------------------------------------------------------------------
 class Default_data:
-    def __init__(self, page, popup, content_page,):
+    def __init__(self, page: ft.Page, popup, content_page):
         # -----------------------------------------------------------------------------------------------
         from api.product_guide import Product
         # -----------------------------------------------------------------------------------------------
@@ -12,6 +12,7 @@ class Default_data:
         self.Product = Product
         self.popup = popup
         self.page = page
+        self.storage = page.session.store
         self.header_width = page.width / 3 # type: ignore
         self.product_id = int(content_page.strip("/shop/product/"))
         # print(f"product_id: {self.product_id}")
@@ -36,12 +37,13 @@ class Default_data:
     # ---------------------------------------------------------------------------------------------------
     def bottom_sheet_open(self, e, key):
         self.bt_order_count_value = 1
+        self.sale_order_price = self.p_price / 10
+        self.final_price = (self.p_price - self.sale_order_price) if key == "subs_order" else self.p_price
         bt_product_price = dogdog.basic_text(spans=[
             ft.TextSpan(f"{self.p_price:,}원\n"),
-            ft.TextSpan(f"똑똑 배송 적용가: {int(self.p_price*0.9):,}원",
+            ft.TextSpan(f"똑똑 배송 적용가: {int(self.sale_order_price):,}원",
                 style=dogdog.TextStyle(size=12, color="#E6001A")) # type: ignore
             ], weight="bold", color=ft.Colors.GREY_700)
-        self.order_price = int(self.p_price*0.9) if key == "subs_order" else self.p_price
         self.default_bottom_sheet_content.clear()
         # print(f"{key}: {self.product_id}")
         bt_product_name = dogdog.basic_text(
@@ -78,11 +80,11 @@ class Default_data:
         )
         # -----------------------------------------------------------------------------------------------
         self.bt_button = self.bt_product_bottom.content
-        self.bt_button.value = f"{self.order_price:,}{self.message.get(key)}" # type: ignore
+        self.bt_button.value = f"{self.final_price:,}{self.message.get(key)}" # type: ignore
         if key == "subs_order": # page.go("/shop/order/subs")
             self.bt_product_bottom.bgcolor = "#E6001A" # type: ignore
             self.bt_button.color = ft.Colors.WHITE # type: ignore
-            self.bt_button.value = f"🔔 {self.order_price:,}{self.message.get(key)}" # type: ignore
+            self.bt_button.value = f"🔔 {int(self.final_price):,}{self.message.get(key)}" # type: ignore
         # -----------------------------------------------------------------------------------------------
         self.default_bottom_sheet_content.append(bt_product_header)
         self.default_bottom_sheet_content.append(ft.Divider())
@@ -105,7 +107,8 @@ class Default_data:
             if count > 1: self.bt_order_count_value = count - 1
         elif value == "forward":
             if count < 99: self.bt_order_count_value = count + 1
-        self.bt_button.value = f"{self.order_price * self.bt_order_count_value:,}{self.message.get(key)}" # type: ignore
+        self.bt_button.value = ( # type: ignore
+            f"{int(self.final_price * self.bt_order_count_value):,}{self.message.get(key)}")
         if key == "subs_order": # page.go("/shop/order/subs")
             self.bt_button.value = "🔔 " + self.bt_button.value # type: ignore
         self.bt_order_count_input.value = str(self.bt_order_count_value)
@@ -138,9 +141,13 @@ class Default_data:
             cart_event.open = True
             self.page.update()
         else:
+            # print(self.product_id, self.bt_order_count_value)
+            self.storage.set("select_product_id",self.product_id)
+            self.storage.set("select_product_quantity", self.bt_order_count_value)
             self.page.go(f"/shop/{key}")
     def show_event(self, text:str):
-        self.page.show_dialog(ft.SnackBar(content=ft.Text(value=text), open=True, behavior=ft.SnackBarBehavior.FLOATING))
+        self.page.show_dialog(
+            ft.SnackBar(content=ft.Text(value=text), open=True, behavior=ft.SnackBarBehavior.FLOATING))
 # -------------------------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------------------------
@@ -154,9 +161,6 @@ def shop_product_detail(page: ft.Page, popup, content_page):
     # Product View
     # ---------------------------------------------------------------------------------------------------
     if dd.is_detail_page:
-        product_brand = dogdog.basic_text(dd.p_brand, size=20, weight="bold", color=ft.Colors.GREY_900)
-        product_brand.expand = True
-        product_brand.text_align = ft.TextAlign.CENTER
         product_name = dogdog.basic_text(dd.p_name, weight="bold", color=ft.Colors.GREY_700)
         product_name.max_lines = 3
         product_name.overflow = ft.TextOverflow.ELLIPSIS
@@ -169,17 +173,11 @@ def shop_product_detail(page: ft.Page, popup, content_page):
             ], weight="bold", color=ft.Colors.GREY_700)
         product_price.text_align = ft.TextAlign.CENTER
         # -----------------------------------------------------------------------------------------------
-        page_header_brand = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[
-            ft.IconButton(
-                icon=ft.Icons.ARROW_BACK_IOS, icon_size=10, 
-                on_click=lambda _:page.go("/shop")),
-            product_brand,
-            ft.Container(width=24)
-        ])
         page_header = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Container(width=dd.header_width, height=dd.header_width, image=ft.DecorationImage(src=dd.p_thumbnail)),
+                ft.Container(
+                    width=dd.header_width, height=dd.header_width, image=ft.DecorationImage(src=dd.p_thumbnail)),
                 ft.Column(
                     height=dd.header_width,
                     alignment=ft.MainAxisAlignment.SPACE_AROUND,
@@ -207,7 +205,6 @@ def shop_product_detail(page: ft.Page, popup, content_page):
         subs_order.ink_color = "#80000F" # type: ignore
         page_header_subs_order = ft.Row(margin=ft.margin.only(top=5, bottom=5), controls=[subs_order])
         # -----------------------------------------------------------------------------------------------
-        content_column.append(page_header_brand)
         content_column.append(page_header)
         content_column.append(page_header_order)
         content_column.append(page_header_subs_order)

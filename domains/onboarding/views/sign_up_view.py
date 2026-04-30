@@ -37,7 +37,6 @@ def sign_up_view(page: ft.Page):
         dogdog.basic_text(value="프로필을 완성하세요.", weight="bold", size=24),
         dogdog.basic_text(value="이메일", weight="bold"),
         email_input,
-        ft.Container(height=10),
         dogdog.basic_text(value="닉네임", weight="bold"),
         name_input,
         dogdog.basic_text(value="비밀번호", weight="bold"),

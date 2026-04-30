@@ -55,7 +55,7 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        target_route = "/shop" if self.is_onboarding_complete else "/sign_up"
+        target_route = "/shop/product/144" if self.is_onboarding_complete else "/sign_up"
         if self.page.route == target_route: self.routing_view(page_name=target_route)
         else: page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
@@ -78,6 +78,13 @@ class Front_dogdog:
     # View Routing Event
     # ---------------------------------------------------------------------------------------------------  
     def routing_view(self, page_name):
+        not_bottom_appbar = [
+            # page_name
+            "/shop/product",
+            "/shop/order",
+            "/shop/subs_order",
+            "/shop/address"
+        ]
         appbar_status = [
             # Icon , Text , On_click
             (ft.Icons.HOME, "Home", lambda _:self.page.go("/home")),
@@ -112,12 +119,6 @@ class Front_dogdog:
                 self.is_onboarding_complete = True
         else:
             # print(len(self.page.views))
-            new_view = ft.View(
-                route=page_name, padding=0, spacing=0, bgcolor="#000000", opacity=0.8, controls=[
-                    ft.Row(alignment=ft.MainAxisAlignment.CENTER,
-                    width=20, controls=[ft.ProgressRing(color=ft.Colors.BLUE_400)])
-                ]
-            )
             if page_name == "/home": self.page.views.clear()
             home_background , main_container_content = domains.home_tile(
                 page=self.page, popup=self.popup, content_page=page_name, change_page_callback=self.page.go
@@ -130,7 +131,7 @@ class Front_dogdog:
             new_view = ft.View(
                 route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
             )
-            if not "/shop/product" in page_name:
+            if not any(page in page_name for page in not_bottom_appbar):
                 new_view.bottom_appbar = dogdog.home_bottom_appbar(appbar_status, page_name)
         self.page.views.append(new_view)
 # -------------------------------------------------------------------------------------------------------

@@ -97,20 +97,30 @@ def home_tile(page: ft.Page, popup, content_page:str, change_page_callback=None)
     elif "/shop/" in content_page:
         home_background , top_banner = dogdog.home_layout(page=page, text="개밥개밥푸드")
         main_container_content.append(top_banner)
-        main_container_content.append(body_scroll_column)
-        body_scroll_column.margin = None
         # -----------------------------------------------------------------------------------------------
         if "product/" in content_page:
+            main_container_content.append(dogdog.shop_top(page=page, content_page=content_page))
             body_scroll_column.controls.append(domains.shop_product_detail.shop_product_detail(
                 page=page, popup=popup, content_page=content_page))
         # -----------------------------------------------------------------------------------------------
         elif "/cart" in content_page:
+            main_container_content.append(dogdog.shop_top(page=page, text="장바구니"))
             body_scroll_column.controls.append(dogdog.basic_text("장바구니 페이지"))
         # -----------------------------------------------------------------------------------------------
         elif "/order" in content_page:
-            body_scroll_column.controls.append(dogdog.basic_text("상품 구매 페이지"))
+            main_container_content.append(dogdog.shop_top(page=page, text="주문 / 결제"))
+            body_scroll_column.controls.append(domains.shop_orders.order_view(
+                page=page, popup=popup, page_name=content_page))
         # -----------------------------------------------------------------------------------------------
         elif "/subs_order" in content_page:
-            body_scroll_column.controls.append(dogdog.basic_text("구독 상품 구매 페이지"))
+            main_container_content.append(dogdog.shop_top(page=page, text="똑똑 배송 / 자동결제 등록"))
+            body_scroll_column.controls.append(domains.shop_orders.order_view(
+                page=page, popup=popup, page_name=content_page))
+        elif "/address" in content_page:
+            main_container_content.append(dogdog.shop_top(page=page, text="주소 검색"))
+            body_scroll_column.controls.append(domains.address_view(page=page))
+        main_container_content.append(ft.Divider(height=1))
+        main_container_content.append(body_scroll_column)
+        body_scroll_column.margin = None
     # ---------------------------------------------------------------------------------------------------
     return home_background , main_container_content
