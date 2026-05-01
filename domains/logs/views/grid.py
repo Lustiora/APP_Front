@@ -169,7 +169,8 @@ class StatusController:
         self.guide_bottom_sheet_content.append(
             ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[dogdog.basic_text(
                 f"{"배변 스코어란?" if route == "bowel" else "BCS 란?"}", size=25, weight="bold"),
-                dogdog.flat_button("닫기", on_click=lambda e:guide_close(e), scale=0.8)]))
+                ft.IconButton(icon=ft.Icons.CLOSE_ROUNDED, 
+                    on_click=lambda e:guide_close(e), icon_color=ft.Colors.GREY_600)]))
         self.guide_bottom_sheet_content.append(ft.Divider())
         self.guide_bottom_sheet_content.append(
             ft.Column(expand=True, scroll=ft.ScrollMode.HIDDEN, 
@@ -226,7 +227,7 @@ def bottom_sheet(e, page: ft.Page, popup, call):
             food = [dogdog.dropdown_menu_option(
                 key=customer_food_id, text=f"{detail.get("brand")} {detail.get("product_name")}"
                     ) for customer_food_id , detail in customer_detail.items()]
-            feeding_food_list = ft.Row(margin=ft.margin.only(bottom=18),
+            feeding_food_list = ft.Row(
                 controls=[
                     dogdog.dropdown_menu(label="사료를 선택해주세요.", options=food, 
                         event=lambda e, change="customer_food_id", 
@@ -314,7 +315,7 @@ def bottom_sheet(e, page: ft.Page, popup, call):
             label="배변 스코어를 선택해주세요.", options=[], 
             event=lambda e, change=f"{call}_weight": s_control.change_event(e, change)
         )
-        hygiene_bowel_score.options = [dogdog.dropdown_menu_option(text=f"{row}") for row in range(1,8)]
+        hygiene_bowel_score.options = [dogdog.dropdown_menu_option(text=f"{row}") for row in range(7, 0, -1)]
         if storage.get(f"{call}_weight"): storage.remove(f"{call}_weight")
         hygiene_bowel_memo = dogdog.input_textfield(
             hint_text="메모 (선택)", text_filter=None, max_length=None, # type: ignore

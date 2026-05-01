@@ -55,7 +55,7 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        target_route = "/shop/product/144" if self.is_onboarding_complete else "/sign_up"
+        target_route = "/home" if self.is_onboarding_complete else "/sign_up"
         if self.page.route == target_route: self.routing_view(page_name=target_route)
         else: page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
@@ -78,10 +78,13 @@ class Front_dogdog:
     # View Routing Event
     # ---------------------------------------------------------------------------------------------------  
     def routing_view(self, page_name):
+        if not "address" in page_name:
+            dogdog.task_controls(30)
         not_bottom_appbar = [
             # page_name
             "/shop/product",
             "/shop/order",
+            "/shop/subs_start",
             "/shop/subs_order",
             "/shop/address"
         ]
@@ -120,13 +123,23 @@ class Front_dogdog:
         else:
             # print(len(self.page.views))
             if page_name == "/home": self.page.views.clear()
+            elif page_name == "/shop": self.page.views.clear()
+            elif "success" in page_name:
+                for i, view in enumerate(self.page.views):
+                    if (view.route == "/shop/product_order" or 
+                        view.route == "/shop/subs_product_order" or 
+                        view.route == "/shop/subs_start"):
+                        # print(view.route)
+                        self.page.views.remove(view)
             home_background , main_container_content = domains.home_tile(
                 page=self.page, popup=self.popup, content_page=page_name, change_page_callback=self.page.go
             )
-            main_container = ft.Container(expand=True, padding=ft.Padding.only(left=10, right=10), 
+            main_container = ft.Container(expand=True, 
+                padding=ft.Padding.only(left=10, right=10, bottom=20 if "/shop/product" in page_name else 0), 
                 content=ft.Column(
                 expand=True,
                 controls=main_container_content))
+            
             layout = ft.Stack(expand=True, controls=[home_background, main_container])
             new_view = ft.View(
                 route=page_name, padding=0, spacing=0, bgcolor="#FFFFFF", controls=[layout]
@@ -134,6 +147,7 @@ class Front_dogdog:
             if not any(page in page_name for page in not_bottom_appbar):
                 new_view.bottom_appbar = dogdog.home_bottom_appbar(appbar_status, page_name)
         self.page.views.append(new_view)
+        dogdog.views_controls(self.page)
 # -------------------------------------------------------------------------------------------------------
 async def main(page: ft.Page): 
     front_end = Front_dogdog(page=page)

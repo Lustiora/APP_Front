@@ -48,6 +48,7 @@ def shop_top(page: ft.Page, text=None, content_page=None):
             page.go(page.views[-1].route)
     # -----------------------------------------------------------------------------------------------
     from api.product_guide import Product
+    content_text = str(text)
     if content_page:
         if "product/" in content_page:
             product_id = int(content_page.lstrip("/shop/product/"))
@@ -55,23 +56,25 @@ def shop_top(page: ft.Page, text=None, content_page=None):
                 if p_id == product_id:
                     content_text = str(p_d.get('brand'))
                     break
-    elif text:
-        content_text = text
     content = dogdog.basic_text(content_text, size=20, weight="bold", color=ft.Colors.GREY_900)
-    content.expand = True
+    content.expand = 6
     content.text_align = ft.TextAlign.CENTER
 
+    row_content = []
+    row_content.append(
+        ft.Container(expand=1, alignment=ft.Alignment.CENTER_LEFT, 
+            content=ft.IconButton(icon=ft.Icons.ARROW_BACK_IOS, icon_size=20, on_click=handle_back)) 
+        if content_page and not "success" in content_page else ft.Container(expand=1))
+    row_content.append(content)
+    row_content.append(
+        ft.Container(expand=1) if content_page and not "success" in content_page else 
+        ft.Container(expand=1, alignment=ft.Alignment.CENTER_RIGHT, 
+            content=ft.IconButton(icon=ft.Icons.CLOSE, icon_size=30, on_click=lambda _:page.go("/shop"))))
     return ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
-        margin=ft.margin.only(bottom=-5),
+        margin=ft.margin.only(left=10, right=10, bottom=-5),
         height=50,
-        controls=[
-            ft.IconButton(
-                icon=ft.Icons.ARROW_BACK_IOS, icon_size=10, 
-                on_click=handle_back),
-            content,
-            ft.Container(width=24)
-    ])
+        controls=row_content)
 
 def order_row(content:list, spacing=10, visible:bool=True):
     return ft.Row(

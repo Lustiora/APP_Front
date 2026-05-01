@@ -67,7 +67,7 @@ def home_layout(page, view=None, text=None):
         right_header = ft.Row(spacing=3, alignment=ft.MainAxisAlignment.CENTER, controls=[
             ft.IconButton(
                 icon=ft.Icons.SEARCH, icon_color=ft.Colors.WHITE, icon_size=26, 
-                on_click=lambda _: print("Product Search") # page.go("/product_search")
+                on_click=lambda _: page.go("/shop/search")
             ),
             ft.IconButton(
                 icon=ft.Icons.NOTIFICATIONS_NONE, icon_color=ft.Colors.WHITE, icon_size=26, 
@@ -75,7 +75,7 @@ def home_layout(page, view=None, text=None):
             ),
             ft.IconButton(
                 icon=ft.Icons.SHOPPING_CART, icon_color=ft.Colors.WHITE, icon_size=26, 
-                on_click=lambda _: print("Shopping Cart") # page.go("/shopping_cart")
+                on_click=lambda _: page.go("/shop/cart")
             )
         ])
     header_container_padding = 40

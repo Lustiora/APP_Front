@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 import flet as ft
 import components as dogdog
+import asyncio
 # -------------------------------------------------------------------------------------------------------
 class Default_data:
     def __init__(self, page: ft.Page, popup, content_page):
@@ -29,8 +30,8 @@ class Default_data:
         self.default_bottom_sheet_content = popup.bottom_sheet_controls
         self.message = {
             "cart":"원 장바구니 담기",
-            "order":"원 바로 구매",
-            "subs_order":"원 똑똑 배송으로 주문하기 🔔"
+            "product_order":"원 바로 구매",
+            "subs_product_order":"원 똑똑 배송으로 주문하기 🔔"
         }
     # ---------------------------------------------------------------------------------------------------
     # Button Bottom Sheet
@@ -81,7 +82,7 @@ class Default_data:
         # -----------------------------------------------------------------------------------------------
         self.bt_button = self.bt_product_bottom.content
         self.bt_button.value = f"{self.final_price:,}{self.message.get(key)}" # type: ignore
-        if key == "subs_order": # page.go("/shop/order/subs")
+        if key == "subs_product_order":
             self.bt_product_bottom.bgcolor = "#E6001A" # type: ignore
             self.bt_button.color = ft.Colors.WHITE # type: ignore
             self.bt_button.value = f"🔔 {int(self.final_price):,}{self.message.get(key)}" # type: ignore
@@ -109,7 +110,7 @@ class Default_data:
             if count < 99: self.bt_order_count_value = count + 1
         self.bt_button.value = ( # type: ignore
             f"{int(self.final_price * self.bt_order_count_value):,}{self.message.get(key)}")
-        if key == "subs_order": # page.go("/shop/order/subs")
+        if key == "subs_product_order":
             self.bt_button.value = "🔔 " + self.bt_button.value # type: ignore
         self.bt_order_count_input.value = str(self.bt_order_count_value)
         self.bt_order_count.update()
@@ -144,7 +145,7 @@ class Default_data:
             # print(self.product_id, self.bt_order_count_value)
             self.storage.set("select_product_id",self.product_id)
             self.storage.set("select_product_quantity", self.bt_order_count_value)
-            self.page.go(f"/shop/{key}")
+            self.page.go(f"/shop/{key}") if key != "subs_product_order" else self.page.go("/shop/subs_start")
     def show_event(self, text:str):
         self.page.show_dialog(
             ft.SnackBar(content=ft.Text(value=text), open=True, behavior=ft.SnackBarBehavior.FLOATING))
@@ -196,12 +197,12 @@ def shop_product_detail(page: ft.Page, popup, content_page):
                 on_click=lambda e:dd.bottom_sheet_open(e=e, key="cart")),
             dogdog.flat_over_button(bgcolor="#FBDD30", # type: ignore
                 text="바로구매", size=16, text_color=ft.Colors.WHITE, expand=True,
-                on_click=lambda e:dd.bottom_sheet_open(e=e, key="order")),
+                on_click=lambda e:dd.bottom_sheet_open(e=e, key="product_order")),
             wishlist
         ])
         subs_order = dogdog.flat_over_button(bgcolor="#E6001A", # type: ignore
             text="🔔 똑똑 배송으로 주문하기 🔔", expand=True, size=16, text_color=ft.Colors.WHITE,
-            on_click=lambda e:dd.bottom_sheet_open(e=e, key="subs_order"))
+            on_click=lambda e:dd.bottom_sheet_open(e=e, key="subs_product_order"))
         subs_order.ink_color = "#80000F" # type: ignore
         page_header_subs_order = ft.Row(margin=ft.margin.only(top=5, bottom=5), controls=[subs_order])
         # -----------------------------------------------------------------------------------------------
@@ -236,7 +237,7 @@ def shop_product_detail(page: ft.Page, popup, content_page):
         )
     # ---------------------------------------------------------------------------------------------------
     return ft.Container(
-        padding=ft.Padding.only(left=20, right=20, top=20),
+        padding=20,
         bgcolor="#ffffff",
         content=ft.Column(
             controls=content_column # type: ignore
