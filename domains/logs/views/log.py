@@ -409,15 +409,16 @@ def log_view(page: ft.Page):
                     points=normal_points,
                     stroke_width=3,
                     color=CHART_LINE_COLOR,
-                    curved=True,
-                    rounded_stroke_cap=True,
-                ),
-                fch.LineChartData(
-                    points=highlight_points,
-                    stroke_width=0,
                     point=True,
-                    color=TOP_VANILLA,
+                    # curved=True,
+                    # rounded_stroke_cap=True,
                 ),
+                # fch.LineChartData(
+                #     points=highlight_points,
+                #     stroke_width=0,
+                #     point=True,
+                #     color=TOP_VANILLA
+                # ),
             ],
             min_x=0,
             max_x=len(chart_data) - 1,
@@ -446,6 +447,9 @@ def log_view(page: ft.Page):
                 color=ft.Colors.TRANSPARENT,
                 width=0,
             ),
+            tooltip=fch.LineChartTooltip(
+                bgcolor=TOP_VANILLA,
+            )
         )        
 
         return case
