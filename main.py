@@ -44,7 +44,7 @@ class Front_dogdog:
         # -----------------------------------------------------------------------------------------------
         # User Data Check
         # -----------------------------------------------------------------------------------------------
-        if User.pet_list:
+        if not User.pet_list:
             self.storage.set("pet_list", User.pet_list)
             (self.storage.set("customer_detail", User.customer_food_detail)
                 if User.customer_food_detail else None)
@@ -56,7 +56,7 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        target_route = "/home" if self.is_onboarding_complete else "/sign_up"
+        target_route = "/home" if self.is_onboarding_complete else "/login"
         if self.page.route == target_route: self.routing_view(page_name=target_route)
         else: page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
@@ -81,6 +81,13 @@ class Front_dogdog:
     def routing_view(self, page_name):
         if not "address" in page_name:
             dogdog.task_controls(30)
+        if self.storage.get('login_email') and self.storage.get('login_password'):
+            self.storage.clear()
+            self.storage.set("pet_list", User.pet_list)
+            (self.storage.set("customer_detail", User.customer_food_detail)
+                if User.customer_food_detail else None)
+            self.storage.set("history", User.pet_log) if User.pet_log else None
+            self.is_onboarding_complete = True
         not_bottom_appbar = [
             # page_name
             "/shop/product",
