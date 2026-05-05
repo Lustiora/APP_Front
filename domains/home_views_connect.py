@@ -94,7 +94,7 @@ def home_tile(page: ft.Page, popup, content_page:str, change_page_callback=None)
         home_background , top_banner = dogdog.home_layout(page=page, text="알림 설정")
         main_container_content.append(top_banner)
         main_container_content.append(body_scroll_column)
-        body_scroll_column.controls.append(domains.notification.notification_setting(page))
+        body_scroll_column.controls.append(domains.notification.notification_setting(page=page, popup=popup))
     # ---------------------------------------------------------------------------------------------------
     elif "/shop/" in content_page:
         shop_content_page = content_page.replace("/shop","")

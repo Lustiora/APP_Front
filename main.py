@@ -44,7 +44,7 @@ class Front_dogdog:
         # -----------------------------------------------------------------------------------------------
         # User Data Check
         # -----------------------------------------------------------------------------------------------
-        if User.pet_list:
+        if not User.pet_list:
             self.storage.set("pet_list", User.pet_list)
             (self.storage.set("customer_detail", User.customer_food_detail)
                 if User.customer_food_detail else None)
@@ -56,7 +56,7 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        target_route = "/home" if self.is_onboarding_complete else "/login"
+        target_route = "/notification_setting" if self.is_onboarding_complete else "/login"
         if self.page.route == target_route: self.routing_view(page_name=target_route)
         else: page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
