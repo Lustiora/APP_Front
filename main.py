@@ -56,7 +56,7 @@ class Front_dogdog:
         # Init First View
         # -----------------------------------------------------------------------------------------------
         page.views.clear()
-        target_route = "/notification_setting" if self.is_onboarding_complete else "/login"
+        target_route = "/home" if self.is_onboarding_complete else "/login"
         if self.page.route == target_route: self.routing_view(page_name=target_route)
         else: page.go(target_route)
     # ---------------------------------------------------------------------------------------------------
