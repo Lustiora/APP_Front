@@ -44,7 +44,7 @@ class Front_dogdog:
         # -----------------------------------------------------------------------------------------------
         # User Data Check
         # -----------------------------------------------------------------------------------------------
-        if not User.pet_list:
+        if User.pet_list:
             self.storage.set("pet_list", User.pet_list)
             (self.storage.set("customer_detail", User.customer_food_detail)
                 if User.customer_food_detail else None)

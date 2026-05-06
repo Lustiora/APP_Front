@@ -74,6 +74,8 @@ class Noti:
         self.page = page
         self.popup = popup
         self.storage = page.session.store
+        self.noti_task = {}
+        self.noti_background_task = []
         base_time = 8
         interval_time = 4
         self.default_time = (
@@ -210,7 +212,10 @@ class Noti:
     def switch_event(self, e):
         switch_type = e.control.data.get('noti')
         self.storage.set(f'noti_{switch_type}', e.data)
-        self.Notification(switch_type)
+        if e.data:
+            self.Notification(switch_type)
+        else:
+            self.noti_remove(switch_type, e.data)
     # ---------------------------------------------------------------------------------------------------
     # Interval Dropdown Event
     # ---------------------------------------------------------------------------------------------------
@@ -276,34 +281,59 @@ class Noti:
             elif switch_type == 'subs3':
                 self.noti_title = "똑똑배송"
                 self.noti_message = "📦 3일 뒤 “가장 맛있는 시간 30일, 닭고기 2.5kg”이 배송됩니다."
+                noti_seconds = 3
             elif switch_type == 'subs7':
                 self.noti_title = "똑똑배송"
                 self.noti_message = "📦 7일 뒤 “가장 맛있는 시간 30일, 닭고기 2.5kg”이 배송됩니다."
+                noti_seconds = 7
             elif switch_type == 'left_food_count':
                 self.noti_title = "소진일 알림"
                 self.noti_message = "🍚 급여중인 사료가 7일치 남았습니다. 지금 바로 사료를 구매하세요."
+                noti_seconds = 7
             if noti_type and select_time:
                 noti_setting_time = datetime.datetime.strptime(noti_type, "%p %H:%M")
                 vs_time = []
+                now = datetime.datetime.now()
                 for count in range(int(24/select_time)):
                     times = noti_setting_time + datetime.timedelta(hours=count*select_time)
                     vs_time.append(times.strftime("%d %H:%M"))
                 print(f' 🛎️ Setting {switch_type} Guide Time (First Alarm ⏲️[{vs_time[1].split()[1]}])\n{'===='*30}')
+                vs_select_time = vs_time[1].split()[1]
+                vs_select_time_value = datetime.datetime(
+                    year=now.year, month=now.month, day=now.day, 
+                    hour=int(vs_select_time.split(':')[0]), minute=int(vs_select_time.split(':')[1]))
+                noti_seconds = int((vs_select_time_value - now).seconds)
             
             popup_title = dogdog.basic_text(self.noti_title, size=16, weight="bold")
             popup_message = dogdog.basic_text(self.noti_message)
             
             self.notification_controls.append(popup_title)
             self.notification_controls.append(popup_message)
+
+            run = asyncio.create_task(self.noti_popup_open(switch_type))
+            
+            self.noti_task.update({
+                switch_type:{
+                    'noti_title':self.noti_title,
+                    'noti_seconds':noti_seconds,
+                    'task':run.get_name()
+                }
+            })
+    # ---------------------------------------------------------------------------------------------------
+    # Notification Popup Open Task
+    # ---------------------------------------------------------------------------------------------------
+    async def noti_popup_open(self, noti):
+        try:
+            await asyncio.sleep(self.noti_task.get(noti).get('noti_seconds')) # type: ignore
             self.notification_popup.open = True
-            for task in asyncio.all_tasks():
-                if "noti_popup_delay" in str(task.get_coro()):
-                    task.cancel()
-            asyncio.create_task(self.noti_popup_delay())
+            self.noti_remove(noti)
+            asyncio.create_task(self.noti_popup_delay(noti))
+            self.noti_background_task.append(noti)
+        except: pass
     # ---------------------------------------------------------------------------------------------------
     # Notification Popup Delay Task
     # ---------------------------------------------------------------------------------------------------
-    async def noti_popup_delay(self):
+    async def noti_popup_delay(self, noti):
         try:
             self.notification_popup.content.offset = ft.Offset(0,-1)
             self.notification_popup.update()
@@ -315,7 +345,31 @@ class Noti:
             self.notification_popup.update()
             self.notification_popup.open = False
             self.page.update()
+            self.noti_remove(noti)
         except: pass
+    # ---------------------------------------------------------------------------------------------------
+    # Notification Popup Remove Task
+    # ---------------------------------------------------------------------------------------------------
+    def noti_remove(self, noti, switch=None):
+        try:
+            for task in asyncio.all_tasks():
+                if "noti_popup_open" in str(task.get_coro()) and not switch:
+                    if self.noti_task.get(noti).get('task') == task.get_name(): # type: ignore
+                        task.cancel()
+                        print('open task remove', noti)
+                if "noti_popup_delay" in str(task.get_coro()):
+                    if noti in self.noti_background_task:
+                        task.cancel()
+                        self.noti_background_task.remove(noti)
+                        print('delay task remove', noti)
+        except Exception as err: 
+            print('noti_remove error:', err)
+        if self.noti_task.get(noti):
+            print('remove', noti)
+            self.noti_task.pop(noti)
+        # print('task',self.noti_task)
+        # print('background',self.noti_background_task)
+
 
 def notification_setting(page: ft.Page, popup):
 
